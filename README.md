@@ -31,7 +31,9 @@
          - Temporal PatchGAN Loss
          - Generator network
          - 3D gated convolution 
-  
+      - Sagong, Min-cheol, et al. "Pepsi: Fast image inpainting with parallel decoding network." In: CVPR (2019):
+         - Based on CAM
+         - Coarse-to-fine network: coarse network and refinement network
    - Optimal Flow:
       - Huang, J.B., Kang, S.B., Ahuja, N., Kopf, J.: Temporally coherent completion of dynamic video. ACM Transactions on Graphics (TOG) (2016) (state-of-the-art):
          - Forward and backward optimal flow
@@ -62,8 +64,23 @@
       -  J. Yu, Z. Lin, J. Yang, X. Shen, X. Lu, and T. S. Huang. Generative image inpainting with contextual attention. In: CVPR (2018):
          - Gan
          - Attention
+         - Coarse-to-fine network: coarse network and refinement network
       - Oh, S.W., Lee, S., Lee, J.Y., Kim, S.J.: Onion-peel networks for deep video completion. In: ICCV (2019):
          - Asymmetric Attention Block
+      - Sagong, Min-cheol, et al. "Pepsi: Fast image inpainting with parallel decoding network." In: CVPR (2019):
+         - Based on CAM
+         - Coarse-to-fine network: coarse network and refinement network
+      - Zeng Y, Fu J, Chao H, et al. Learning pyramid-context encoder network for high-quality image inpainting. CVPR (2019):
+         - High level feature to low level by Attention
+   
+   
+   
+   - Reinforcment Learning:
+      - Han X, Zhang Z, Du D, et al. Deep reinforcement learning of volume-guided progressive view inpainting for 3d point scene completion from a single depth image. In: CVPR (2019):
+         - volume guidance
+         - 3D scene volume reconstruction
+         - 2D depth map inpainting
+         - Deep Q-network to choose the best view for large hole completion
          
    
     
