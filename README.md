@@ -17,10 +17,10 @@
          - Convolustional LSTM
          - TempoGan Loss
       - Chang, Y.L., Liu, Z.Y., Hsu, W.: Free-form video inpainting with 3D gated convolution and temporal patchgan. In: ICCV (2019):
-         - Temporal PatchGAN
+         - Temporal PatchGAN Loss
+         - Generator network
          - 3D gated convolution 
-   - Wang, C., Huang, H., Han, X., Wang, J.: Video inpainting by jointly learning temporal structure and spatial details. In: AAAI (2019):
-      - first work to use deep neural networks
-      - 3D CNN fir temporal structure prediction, 2D CNN for spatial detail recovering
+    - Optial Flow:
+      -
    
    
