@@ -1,16 +1,27 @@
 # Video-inpainting
 
 # Related work
+- Survery: Ilan, S., Shamir, A.: A survey on data-driven video completion. In: Computer Graphics Forum. vol. 34, pp. 60–85 (2015)
+
 1. Patch-based synthesis (Limitation: slow and they can only remix existing patches in the video, cannot handle non-repetitive structures such as faces)
    - Wexler, Y., Shechtman, E., Irani, M.: Space-time completion of video. TPAMI (3), 463–476 (2007)
    - Newson, A., Almansa, A., Fradet, M., Gousseau, Y., Pérez, P.: Video inpainting of complex scenes. SIAM Journal on Imaging Sciences (2014)
    - Huang, J.B., Kang, S.B., Ahuja, N., Kopf, J.: Temporally coherent completion of dynamic video. ACM Transactions on Graphics (TOG) (2016)
+
 2. Learning-based synthesis
+   
    - Deep neural network:
       - Wang, C., Huang, H., Han, X., Wang, J.: Video inpainting by jointly learning temporal structure and spatial details. In: AAAI (2019):
          - first work to use deep neural networks
          - 3D CNN fir temporal structure prediction, 2D CNN for spatial detail recovering
+      - ** Lee, S., Oh, S.W., Won, D., Kim, S.J.: Copy-and-paste networks for deep video inpainting. In: ICCV (2019):
+         - DNN-based 
+         - Align the frames
+   
    - Gan:
+      -  J. Yu, Z. Lin, J. Yang, X. Shen, X. Lu, and T. S. Huang. Generative image inpainting with contextual attention. In: CVPR (2018) (image inpainting):
+         - Gan
+         - Attention
       -  Ya-Liang Chang, Zhe Yu Liu, and Winston Hsu. Vornet: Spatio-temporally consistent video inpainting for object removal. In: CVPR (2019):
          - FlowNet2 pre-trained to calculated the raw optial flow
          - Gan from Yu
@@ -20,7 +31,41 @@
          - Temporal PatchGAN Loss
          - Generator network
          - 3D gated convolution 
-    - Optial Flow:
-      -
+  
+   - Optimal Flow:
+      - Huang, J.B., Kang, S.B., Ahuja, N., Kopf, J.: Temporally coherent completion of dynamic video. ACM Transactions on Graphics (TOG) (2016) (state-of-the-art):
+         - Forward and backward optimal flow
+      - Xu, R., Li, X., Zhou, B., Loy, C.C.: Deep flow-guided video inpainting. In: CVPR (2019):
+         - Using FlowNet2
+         - ResNet50
+      -  Ya-Liang Chang, Zhe Yu Liu, and Winston Hsu. Vornet: Spatio-temporally consistent video inpainting for object removal. In: CVPR (2019):
+         - FlowNet2 pre-trained to calculated the raw optial flow
+         - Gan from Yu
+         - Convolustional LSTM
+         - TempoGan Loss
+      - Gao C, Saraf A, Huang J B, et al. Flow-edge guided video completion. In: ECCV (2020):
+         - Flow egdge
+            - FlowNet2
+            - Canny edge detector
+            - EdgeConne
+         - Non-local flow
+         - Seamless blending
+         - TempoGan
+      - Kim, D., Woo, S., Lee, J.Y., Kweon, I.S.: Deep video inpainting. In: CVPR (2019):
+         - Optimal Flow
+         - ConvLSTM
+         - Flow loss and wrap loss
+         - Generated frame and generated inpainting frame
+            
+         
+   - Attention:
+      -  J. Yu, Z. Lin, J. Yang, X. Shen, X. Lu, and T. S. Huang. Generative image inpainting with contextual attention. In: CVPR (2018):
+         - Gan
+         - Attention
+      - Oh, S.W., Lee, S., Lee, J.Y., Kim, S.J.: Onion-peel networks for deep video completion. In: ICCV (2019):
+         - Asymmetric Attention Block
+         
+   
+    
    
    
