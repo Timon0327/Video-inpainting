@@ -82,7 +82,17 @@
          - 2D depth map inpainting
          - Deep Q-network to choose the best view for large hole completion
          
-   
+  
+  
+   - Graph:
+     - INDUCTIVE REPRESENTATION LEARNING ON TEMPORAL GRAPHS. In ICLR (2020):
+         - temporal graph attention
+     - Hyper-SAGNN: a self-attention based graph neural network for hypergraphs. In ICLR (2020):
+         - hypergraph **
+         - self-attention
+     - (David, Google) Learning to Execute Programs with Instruction Pointer Attention Graph Neural Networks. In Nips (2020):
+         - attention graph
+     - Spectral Temporal Graph Neural Network for Multivariate Time-series Forecasting. In Nips (2020)
     
    
    
