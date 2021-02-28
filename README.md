@@ -93,6 +93,8 @@
      - (David, Google) Learning to Execute Programs with Instruction Pointer Attention Graph Neural Networks. In Nips (2020):
          - attention graph
      - Spectral Temporal Graph Neural Network for Multivariate Time-series Forecasting. In Nips (2020)
-    
+
+
+
    
    
