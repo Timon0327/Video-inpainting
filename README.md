@@ -26,9 +26,9 @@
          - FlowNet2 pre-trained to calculated the raw optial flow
          - Gan from Yu
          - Convolustional LSTM
-         - **TempoGan Loss
+         - TempoGan Loss *************
       - Chang, Y.L., Liu, Z.Y., Hsu, W.: Free-form video inpainting with 3D gated convolution and temporal patchgan. In: ICCV (2019):
-         - **Temporal PatchGAN Loss 
+         - Temporal PatchGAN Loss ****************
          - Generator network
          - 3D gated convolution 
       - Sagong, Min-cheol, et al. "Pepsi: Fast image inpainting with parallel decoding network." In: CVPR (2019):
@@ -88,7 +88,7 @@
      - INDUCTIVE REPRESENTATION LEARNING ON TEMPORAL GRAPHS. In ICLR (2020):
          - temporal graph attention
      - Hyper-SAGNN: a self-attention based graph neural network for hypergraphs. In ICLR (2020):
-         - **hypergraph 
+         - hypergraph ***************
          - self-attention
      - (David, Google) Learning to Execute Programs with Instruction Pointer Attention Graph Neural Networks. In Nips (2020):
          - attention graph
