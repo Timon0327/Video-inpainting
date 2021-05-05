@@ -5,13 +5,6 @@ import math
 import scipy.sparse as sparse
 from torch.nn.parameter import Parameter
 
-'''
-
-The function of build graph, but it is random to define the node, 
-when the features are got, it will be replaced.
-
-'''
-
 nodes = []
 node_trans = []
 
@@ -55,30 +48,34 @@ for n in range(size):
 # print(sum(adj[0]))
 
 adj = adj.numpy()
-upper_X = sparse.triu(adj)
-adj_T = upper_X + upper_X.T - sparse.diags(adj.diagonal())
+# upper_X = sparse.triu(adj)
+# adj_T = upper_X + upper_X.T - sp.diags(adj.diagonal())
 # print(adj.sum(1))
-# # print(adj_T)
+# print(adj_T)
 # print(adj_T.sum(1))
 
-# method 1
+
 # def normalize(mx):
 #     rowsum = np.array(mx.sum(1))  # degree D
-#     r_inv = np.power(rowsum, -1).flatten() # norm，A^=(D~)^-1 A~
+#     r_inv = np.power(rowsum, -1).flatten()
 #     r_inv[np.isinf(r_inv)] = 0.
 #     r_mat_inv = sp.diags(r_inv)
 #     mx = r_mat_inv.dot(mx)
 #     return mx
-# method 2
 def normalize(mx):
-    degree = np.array(mx.sum(1))  # degree D
-    degree = sp.diags(np.power(degree, -1).flatten()) # norm，A^=(D~)^-1 A~
+    degree = np.array(mx.sum(1))  # 为每个结点计算度
+    degree = sp.diags(np.power(degree, -1).flatten())
+    # print(degree.shape)
     mx = degree.dot(mx)
     return mx
-
-#A^=I+A
-adj = normalize(adj_T + sp.eye(adj_T.shape[0]))
+# adj = adj.numpy()
+adj = normalize(adj + sp.eye(adj.shape[0]))
+# adj_1 = normalize(adj_T + sp.eye(adj_T.shape[0]))
+adj = torch.tensor(adj)
+# print(adj.sum(1))
 # print(adj)
+# print(adj_1)
+# print(adj_1.sum(1))
 
 
 
