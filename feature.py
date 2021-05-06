@@ -62,6 +62,7 @@ def extract_features(backbone, dataset='davis', batch_size=1):
             with open(os.path.join(output_dir, previous_video + '.pk'), 'wb') as f:
                 pickle.dump(results, f)
             results = []
+            print(previous_video)
         results.append(model(img))
         previous_video = sample['video']
 
