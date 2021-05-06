@@ -54,7 +54,7 @@ def extract_features(backbone, dataset='davis', batch_size=1):
     if torch.cuda.device_count() > 1:
         model = torch.nn.DataParallel(model)
         model = model.cuda()
-        print('using multiple gpus')
+        print('torch.cuda.device_count()')
 
     previous_video = None
     results = []
