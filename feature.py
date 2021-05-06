@@ -53,14 +53,14 @@ def extract_features(backbone, dataset='davis', batch_size=1):
 
     if torch.cuda.device_count() > 1:
         model = torch.nn.DataParallel(model)
-        model = model.cuda()
+        model = model.to(device)
         print(torch.cuda.device_count())
 
     previous_video = None
     results = []
 
     for batch, sample in enumerate(val_dataloader):
-        img = sample['image'].cuda()
+        img = sample['image'].to(device)
         img = torch.squeeze(img)
         # res = model(img)
         if sample['video'] != previous_video and previous_video:
