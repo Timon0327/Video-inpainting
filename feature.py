@@ -52,7 +52,7 @@ def extract_features(backbone, dataset='davis', batch_size=1):
                          )
 
     if torch.cuda.device_count() > 1:
-        model = torch.nn.DataParallel(model, device_ids=[2, 3])
+        model = torch.nn.DataParallel(model, device_ids=['2', '3'])
         model = model.cuda()
         print('using multiple gpus')
 
