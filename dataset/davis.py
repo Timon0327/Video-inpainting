@@ -28,15 +28,15 @@ class Davis_dataset(Dataset):
         self.slice = slice
         # set path
         if mode == 'train':
-            self.images_dir = os.path.join(data_root, 'JPEGImages', '480p')
-            self.annotations_dir = os.path.join(data_root, 'Annotations', '480p')
+            self.images_dir = os.path.join(data_root, 'JPEGImages', 'Full-Resolution')
+            self.annotations_dir = os.path.join(data_root, 'Annotations', 'Full-Resolution')
             video_file = os.path.join(data_root, 'ImageSets', '2017', 'train.txt')
         elif mode == 'val':
-            self.images_dir = os.path.join(data_root, 'JPEGImages', '480p')
-            self.annotations_dir = os.path.join(data_root, 'Annotations', '480p')
+            self.images_dir = os.path.join(data_root, 'JPEGImages', 'Full-Resolution')
+            self.annotations_dir = os.path.join(data_root, 'Annotations', 'Full-Resolution')
             video_file = os.path.join(data_root, 'ImageSets', '2017', 'val.txt')
         else:
-            self.images_dir = os.path.join(data_root, 'JPEGImages', '480p')
+            self.images_dir = os.path.join(data_root, 'JPEGImages', 'Full-Resolution')
             video_file = os.path.join(data_root, 'ImageSets', '2017', 'test-dev.txt')
 
         # set functions to adjust images
