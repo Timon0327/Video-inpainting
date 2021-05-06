@@ -30,33 +30,6 @@ class GCN_spatial(nn.Module):
         # print(X)
         return X
 
-
-class GCN_temporal(nn.Module):
-    '''
-
-    Z = AXW
-
-    '''
-
-    def __init__(self, adj, feature_dim, out_dim):
-        super(GCN_temporal, self).__init__()
-        self.A = adj
-        # self.X = X
-        self.fc1 = nn.Linear(feature_dim, feature_dim, bias=False)
-        self.fc2 = nn.Linear(feature_dim, feature_dim, bias=False)
-        self.fc3 = nn.Linear(feature_dim, out_dim, bias=False)
-
-    def forward(self, X):
-        X = F.leaky_relu(self.fc1(adj.mm(X)))
-        X = F.leaky_relu(self.fc2(adj.mm(X)))
-        X = self.fc3(adj.mm(X))
-        # print('x', X)
-        maxpooling = torch.nn.MaxPool2d(2, stride=2)
-        output = maxpooling(X)
-        # print(X)
-        return output
-
-
 class spatial(nn.Module):
     '''
 
