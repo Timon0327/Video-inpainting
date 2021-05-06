@@ -5,6 +5,10 @@ import math
 import scipy.sparse as sparse
 from torch.nn.parameter import Parameter
 
+'''
+build graph
+'''
+
 nodes = []
 node_trans = []
 
