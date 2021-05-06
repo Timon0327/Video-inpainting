@@ -53,6 +53,9 @@ class Davis_dataset(Dataset):
             tmp = f.readlines()
             self.video_list = [x[:-1] for x in tmp]
 
+        # video name
+        self.video_name = None
+
         # counting number
         self.count = 0
 
@@ -95,27 +98,29 @@ class Davis_dataset(Dataset):
             else:
                 video_id = i
                 break
-        video = self.video_list[video_id]
+        self.video_name = self.video_list[video_id]
 
         # find and load the frame
         img_id = idx - self.acc_num[video_id]
-        imgs_list = os.listdir(os.path.join(self.images_dir, video))
+        imgs_list = os.listdir(os.path.join(self.images_dir, self.video_name))
         imgs_list.sort()
-        frame = cv.imread(os.path.join(self.images_dir, video, imgs_list[img_id]))
+        frame = cv.imread(os.path.join(self.images_dir, self.video_name, imgs_list[img_id]))
         frames = self.transform(frame, self.size, self.slice)
         # print(video, imgs_list[img_id])
 
         # find and load the annotation
         if self.mode == 'test':
-            anno_list = os.listdir(os.path.join(self.annotations_dir, video))
+            anno_list = os.listdir(os.path.join(self.annotations_dir, self.video_name))
             anno_list.sort()
-            annotation = cv.imread(os.path.join(self.annotations_dir, video, anno_list[img_id]))
+            annotation = cv.imread(os.path.join(self.annotations_dir, self.video_name, anno_list[img_id]))
             annotation = self.anno_transform(annotation)
 
         if self.mode != 'test':
-            result = {'image': frames}
+            result = {'image': frames,
+                      'video': self.video_name}
         else:
             result = {'image': frames,
+                      'video': self.video_name,
                       'annotation': annotation}
 
         return result

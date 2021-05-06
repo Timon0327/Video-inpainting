@@ -4,6 +4,7 @@
 #  Likun Qin, 2021
 '''
 import pickle
+import os
 import numpy as np
 import torch
 from torch import nn
@@ -12,6 +13,10 @@ from torchvision.transforms import ToTensor, Lambda, Compose
 from dataset.davis import Davis_dataset
 from models.Resnet import resnet50, resnet101
 from utils.image import resize_pieces
+
+output_dir = '/mnt/qinlikun/inpainting/features'
+if not os.path.exists(output_dir):
+    os.mkdir(output_dir)
 
 
 def extract_features(backbone, dataset='davis', batch_size=1):
@@ -24,9 +29,9 @@ def extract_features(backbone, dataset='davis', batch_size=1):
     '''
     # load data
     if dataset == 'davis':
-        val_dataset = Davis_dataset(data_root='/home/captain/dataset/DAVIS/DAVIS-semisupervised/DAVIS-trainval',
-                                    size=(1600, 1600),
-                                    slice=8,
+        val_dataset = Davis_dataset(data_root='/mnt/qinlikun/dataset/DAVIS',
+                                    size=(2240, 2240),
+                                    slice=10,
                                     mode='val',
                                     transform=resize_pieces
                                     )
@@ -39,23 +44,33 @@ def extract_features(backbone, dataset='davis', batch_size=1):
 
     if backbone == 'resnet50':
         model = resnet50(pretrained=True,
-                         weight_path='/home/captain/projects/Video-inpainting/ckpt/resnet50-19c8e357.pth'
+                         weight_path='/mnt/qinlikun/inpainting/resnet/resnet50-19c8e357.pth'
                          ).to(device)
     elif backbone == 'resnet101':
         model = resnet101(pretrained=True,
-                         weight_path='/home/captain/projects/Video-inpainting/ckpt/resnet101-5d3b4d8f.pth'
+                         weight_path='/mnt/qinlikun/inpainting/resnet/resnet101-5d3b4d8f.pth'
                          ).to(device)
 
-    # save some feature locally
-
+    previous_video = None
+    results = []
 
     for batch, sample in enumerate(val_dataloader):
-        if batch > 2:
-            print(res.size())
-            break
         img = sample['image'].to(device)
         img = torch.squeeze(img)
-        res = model(img)
+        # res = model(img)
+        if sample['video'] != previous_video and previous_video:
+            with open(os.path.join(output_dir, previous_video + '.pk'), 'wb') as f:
+                pickle.dump(results, f)
+            results = []
+        results.append(model(img))
+        previous_video = sample['video']
+
+    with open(os.path.join(output_dir, previous_video + '.pk'), 'wb') as f:
+        pickle.dump(results, f)
+
+
+
+
 
 
 
