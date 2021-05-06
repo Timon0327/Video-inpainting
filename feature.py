@@ -9,7 +9,6 @@ import numpy as np
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
-from torchvision.transforms import ToTensor, Lambda, Compose
 from dataset.davis import Davis_dataset
 from models.Resnet import resnet50, resnet101
 from utils.image import resize_pieces
@@ -46,17 +45,22 @@ def extract_features(backbone, dataset='davis', batch_size=1):
     if backbone == 'resnet50':
         model = resnet50(pretrained=True,
                          weight_path='/mnt/qinlikun/inpainting/resnet/resnet50-19c8e357.pth'
-                         ).to(device)
+                         )
     elif backbone == 'resnet101':
         model = resnet101(pretrained=True,
                          weight_path='/mnt/qinlikun/inpainting/resnet/resnet101-5d3b4d8f.pth'
-                         ).to(device)
+                         )
+
+    if torch.cuda.device_count() > 1:
+        model = torch.nn.DataParallel(model, device_ids=[2, 3])
+        model = model.cuda()
+        print('using multiple gpus')
 
     previous_video = None
     results = []
 
     for batch, sample in enumerate(val_dataloader):
-        img = sample['image'].to(device)
+        img = sample['image'].cuda()
         img = torch.squeeze(img)
         # res = model(img)
         if sample['video'] != previous_video and previous_video:
