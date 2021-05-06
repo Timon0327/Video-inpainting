@@ -30,8 +30,8 @@ def extract_features(backbone, dataset='davis', batch_size=1):
     # load data
     if dataset == 'davis':
         val_dataset = Davis_dataset(data_root='/mnt/qinlikun/dataset/DAVIS',
-                                    size=(1344, 1344),
-                                    slice=6,
+                                    size=(1120, 1120),
+                                    slice=5,
                                     mode='val',
                                     transform=resize_pieces
                                     )
@@ -64,10 +64,11 @@ def extract_features(backbone, dataset='davis', batch_size=1):
         img = torch.squeeze(img)
         # res = model(img)
         if sample['video'] != previous_video and previous_video:
+            print(previous_video)
+            print('length: ', len(results))
             with open(os.path.join(output_dir, previous_video + '.pk'), 'wb') as f:
                 pickle.dump(results, f)
             results = []
-            print(previous_video)
         results.append(model(img))
         previous_video = sample['video']
 
