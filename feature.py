@@ -18,6 +18,7 @@ output_dir = '/mnt/qinlikun/inpainting/features'
 if not os.path.exists(output_dir):
     os.mkdir(output_dir)
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "2,3"
 
 def extract_features(backbone, dataset='davis', batch_size=1):
     '''
