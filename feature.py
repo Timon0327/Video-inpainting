@@ -71,6 +71,7 @@ def extract_features(backbone, dataset='davis', batch_size=1):
             # read in frames in a mini batch
             img = img.to(device)
             img = torch.squeeze(img)
+            print(batch)
             results.append(model(img))
 
         if sample['video'][0] != previous_video and previous_video:
