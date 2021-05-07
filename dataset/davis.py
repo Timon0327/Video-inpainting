@@ -38,15 +38,15 @@ class Davis_dataset(Dataset):
         self.div = div
         # set path
         if mode == 'train':
-            self.images_dir = os.path.join(data_root, 'JPEGImages', 'Full-Resolution')
-            self.annotations_dir = os.path.join(data_root, 'Annotations', 'Full-Resolution')
+            self.images_dir = os.path.join(data_root, 'JPEGImages', '480p')   # Full-Resolution
+            self.annotations_dir = os.path.join(data_root, 'Annotations', '480p')
             video_file = os.path.join(data_root, 'ImageSets', '2017', 'train.txt')
         elif mode == 'val':
-            self.images_dir = os.path.join(data_root, 'JPEGImages', 'Full-Resolution')
-            self.annotations_dir = os.path.join(data_root, 'Annotations', 'Full-Resolution')
+            self.images_dir = os.path.join(data_root, 'JPEGImages', '480p')
+            self.annotations_dir = os.path.join(data_root, 'Annotations', '480p')
             video_file = os.path.join(data_root, 'ImageSets', '2017', 'val.txt')
         else:
-            self.images_dir = os.path.join(data_root, 'JPEGImages', 'Full-Resolution')
+            self.images_dir = os.path.join(data_root, 'JPEGImages', '480p')
             video_file = os.path.join(data_root, 'ImageSets', '2017', 'test-dev.txt')
 
         # set functions to adjust images
@@ -76,7 +76,7 @@ class Davis_dataset(Dataset):
         self.frame_num = []
 
         # accumulated number of all images
-        self.acc_num = []
+        self.acc_num = [0]
         acc = 0
 
         for one in self.video_list:
@@ -106,7 +106,7 @@ class Davis_dataset(Dataset):
             if idx >= acc:
                 continue
             else:
-                video_id = i
+                video_id = i - 1
                 break
         self.video_name = self.video_list[video_id]
 
@@ -134,10 +134,12 @@ class Davis_dataset(Dataset):
 
         if self.mode != 'test':
             result = {'image': frames,
-                      'video': self.video_name}
+                      'video': self.video_name,
+                      'id': img_id}
         else:
             result = {'image': frames,
                       'video': self.video_name,
+                      'id': img_id,
                       'annotation': annotation}
 
         return result

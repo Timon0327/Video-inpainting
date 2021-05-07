@@ -73,21 +73,30 @@ def extract_features(backbone, dataset='davis', batch_size=1):
             img = torch.squeeze(img)
             print(batch)
             results.append(model(img))
-            del img
 
-        if sample['video'][0] != previous_video and previous_video:
-            print(previous_video)
-            print('length: ', len(results))
-            with open(os.path.join(output_dir, previous_video + '.pk'), 'wb') as f:
-                pickle.dump(results, f)
-            results = []
-            del f
+        # save features
+        if not os.path.exists(os.path.join(output_dir, sample['video'][0])):
+            os.mkdir(os.path.join(output_dir, sample['video'][0]))
+        id = sample['id'].numpy()[0]
+        print('image id: ', id)
+        with open(os.path.join(output_dir, sample['video'][0], str(id) + '.pk'), 'wb') as f:
+            pickle.dump(results, f)
+        results = []
 
-        previous_video = sample['video'][0]
 
-    with open(os.path.join(output_dir, previous_video + '.pk'), 'wb') as f:
-        pickle.dump(results, f
-)
+        # if sample['video'][0] != previous_video and previous_video:
+        #     print(previous_video)
+        #     print('length: ', len(results))
+        #     with open(os.path.join(output_dir, previous_video + '.pk'), 'wb') as f:
+        #         pickle.dump(results, f)
+        #     results = []
+        #     del f
+        #
+        # previous_video = sample['video'][0]
+
+    # with open(os.path.join(output_dir, previous_video + '.pk'), 'wb') as f:
+    #     pickle.dump(results, f
+    #    )
 
 
 
