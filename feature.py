@@ -17,7 +17,7 @@ output_dir = '/mnt/qinlikun/inpainting/features'
 if not os.path.exists(output_dir):
     os.mkdir(output_dir)
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "2,3"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "2,3"
 
 def extract_features(backbone, dataset='davis', batch_size=1):
     '''
@@ -30,8 +30,9 @@ def extract_features(backbone, dataset='davis', batch_size=1):
     # load data
     if dataset == 'davis':
         val_dataset = Davis_dataset(data_root='/mnt/qinlikun/dataset/DAVIS',
-                                    size=(896, 896),
-                                    slice=4,
+                                    size=(2240, 2240),
+                                    slice=10,
+                                    div=10,
                                     mode='val',
                                     transform=resize_pieces
                                     )
@@ -55,25 +56,36 @@ def extract_features(backbone, dataset='davis', batch_size=1):
         model = torch.nn.DataParallel(model)
         model = model.to(device)
         print(torch.cuda.device_count())
+    else:
+        model = model.to(device)
 
     previous_video = None
     results = []
 
     for batch, sample in enumerate(val_dataloader):
-        img = sample['image'].to(device)
-        img = torch.squeeze(img)
-        # res = model(img)
+        if batch == 0:
+            print(sample['image'][0].size())
+            # print(sample['video'][0])
+
+        for img in sample['image']:
+            # read in frames in a mini batch
+            img = img.to(device)
+            img = torch.squeeze(img)
+            results.append(model(img))
+
         if sample['video'] != previous_video and previous_video:
             print(previous_video)
             print('length: ', len(results))
             with open(os.path.join(output_dir, previous_video + '.pk'), 'wb') as f:
                 pickle.dump(results, f)
             results = []
-        results.append(model(img))
-        previous_video = sample['video']
+            del f
+
+        previous_video = sample['video'][0]
 
     with open(os.path.join(output_dir, previous_video + '.pk'), 'wb') as f:
-        pickle.dump(results, f)
+        pickle.dump(results, f
+)
 
 
 

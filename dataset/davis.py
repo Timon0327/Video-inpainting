@@ -3,6 +3,7 @@
 #  customize dataset for DAVIS
 #  Likun Qin, 2021
 '''
+import torch
 from torch.utils.data.dataset import Dataset
 from utils.image import resize_pieces
 import cv2 as cv
@@ -10,7 +11,14 @@ import numpy as np
 import os
 
 class Davis_dataset(Dataset):
-    def __init__(self, data_root, size, slice=10, mode='val',transform=None, anno_transform=None):
+    def __init__(self,
+                 data_root,
+                 size,
+                 slice=10,
+                 div=1,
+                 mode='val',
+                 transform=None,
+                 anno_transform=None):
         '''
         initialization of Dasvis_dataset
         dataset structure:
@@ -20,12 +28,14 @@ class Davis_dataset(Dataset):
         :param data_root: the directory containing Annotations, JPEGImages, ImageSets
         :param size: the size of image, tuple, (height, width)
         :param slice: how many slices in each dimension (height, width), int
+        :param div: the number of batches one image to be divided, int
         :param transform: the function to be applied to images
         :param anno_transform: the function to be applied to annotations
         :param mode: str   train, val or test
         '''
         self.size = size
         self.slice = slice
+        self.div = div
         # set path
         if mode == 'train':
             self.images_dir = os.path.join(data_root, 'JPEGImages', 'Full-Resolution')
@@ -105,8 +115,15 @@ class Davis_dataset(Dataset):
         imgs_list = os.listdir(os.path.join(self.images_dir, self.video_name))
         imgs_list.sort()
         frame = cv.imread(os.path.join(self.images_dir, self.video_name, imgs_list[img_id]))
-        frames = self.transform(frame, self.size, self.slice)
-        # print(video, imgs_list[img_id])
+        whole_frames = self.transform(frame, self.size, self.slice)
+
+        # divide one image to several batches
+        frames = []
+        if self.div != 1:
+            for one in torch.chunk(whole_frames, self.div, dim=0):
+                frames.append(one)
+        else:
+            frames.append(whole_frames)
 
         # find and load the annotation
         if self.mode == 'test':
@@ -129,7 +146,8 @@ class Davis_dataset(Dataset):
 if __name__ == '__main__':
     dataset = Davis_dataset(data_root='/home/captain/dataset/DAVIS/DAVIS-semisupervised/DAVIS-trainval',
                             size=(800, 800),
-                            slice=10,
+                            slice=4,
+                            div=4,
                             mode='val',
                             transform=resize_pieces
                             )
