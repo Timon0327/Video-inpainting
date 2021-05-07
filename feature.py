@@ -32,7 +32,7 @@ def extract_features(backbone, dataset='davis', batch_size=1):
         val_dataset = Davis_dataset(data_root='/mnt/qinlikun/dataset/DAVIS',
                                     size=(2240, 2240),
                                     slice=10,
-                                    div=25,
+                                    div=50,
                                     mode='val',
                                     transform=resize_pieces
                                     )
