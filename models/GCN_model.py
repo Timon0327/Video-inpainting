@@ -107,6 +107,8 @@ class GCN(nn.Module):
             out = torch.matmul(self.laplacian_adj, out)  # [nodes, 2048]
             out = self.blocks[j](out)  # [nodes, 2048]
 
+        return out
+
 
 
 

@@ -29,10 +29,14 @@ def apply_mask_resize(frame, size, slice, mask):
 
     img_big = totensor(img)
     imgs = []
-    for row in torch.chunk(img_big, slice, dim=1):
-        for one in torch.chunk(row, slice, dim=2):
-            imgs.append(one)
-    return torch.stack(imgs, dim=0)
+    if slice > 1:
+        for row in torch.chunk(img_big, slice, dim=1):
+            for one in torch.chunk(row, slice, dim=2):
+                imgs.append(one)
+        return torch.stack(imgs, dim=0)
+    else:
+        return img_big
+
 
 
 def apply_mask(frame, mask):
