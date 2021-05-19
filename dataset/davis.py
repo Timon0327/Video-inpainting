@@ -5,7 +5,7 @@
 '''
 import torch
 from torch.utils.data.dataset import Dataset
-from utils.image import resize_pieces
+from utils.image import image_and_mask
 import cv2 as cv
 import numpy as np
 import os
@@ -17,8 +17,7 @@ class Davis_dataset(Dataset):
                  slice=10,
                  div=1,
                  mode='val',
-                 transform=None,
-                 anno_transform=None):
+                 transform=None):
         '''
         initialization of Dasvis_dataset
         dataset structure:
@@ -30,7 +29,6 @@ class Davis_dataset(Dataset):
         :param slice: how many slices in each dimension (height, width), int
         :param div: the number of batches one image to be divided, int
         :param transform: the function to be applied to images
-        :param anno_transform: the function to be applied to annotations
         :param mode: str   train, val or test
         '''
         self.size = size
@@ -51,8 +49,6 @@ class Davis_dataset(Dataset):
 
         # set functions to adjust images
         self.transform = transform
-        if mode == 'test':
-            self.anno_transform = anno_transform
 
         # set mode
         self.mode = mode
@@ -115,7 +111,17 @@ class Davis_dataset(Dataset):
         imgs_list = os.listdir(os.path.join(self.images_dir, self.video_name))
         imgs_list.sort()
         frame = cv.imread(os.path.join(self.images_dir, self.video_name, imgs_list[img_id]))
-        whole_frames = self.transform(frame, self.size, self.slice)
+
+        if self.mode == 'test':
+            mask = cv.imread(os.path.join(self.annotations_dir, self.video_name, imgs_list[img_id]))[2]
+        else:
+            mask = None
+        whole_frames, mask = self.transform(frame=frame,
+                                      size=self.size,
+                                      slice=self.slice,
+                                      mask=mask,
+                                      margin=(50,50),
+                                      rect_shape=(270,480))
 
         # divide one image to several batches
         frames = []
@@ -125,22 +131,10 @@ class Davis_dataset(Dataset):
         else:
             frames.append(whole_frames)
 
-        # find and load the annotation
-        if self.mode == 'test':
-            anno_list = os.listdir(os.path.join(self.annotations_dir, self.video_name))
-            anno_list.sort()
-            annotation = cv.imread(os.path.join(self.annotations_dir, self.video_name, anno_list[img_id]))
-            annotation = self.anno_transform(annotation)
-
-        if self.mode != 'test':
-            result = {'image': frames,
-                      'video': self.video_name,
-                      'id': img_id}
-        else:
-            result = {'image': frames,
-                      'video': self.video_name,
-                      'id': img_id,
-                      'annotation': annotation}
+        result = {'image': frames,
+                  'video': self.video_name,
+                  'id': img_id,
+                  'mask': mask}
 
         return result
 
@@ -151,7 +145,7 @@ if __name__ == '__main__':
                             slice=4,
                             div=4,
                             mode='val',
-                            transform=resize_pieces
+                            transform=image_and_mask
                             )
     print(len(dataset))
     res = dataset.__getitem__(100)

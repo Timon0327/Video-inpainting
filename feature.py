@@ -11,7 +11,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 from dataset.davis import Davis_dataset
 from models.Resnet import resnet50, resnet101
-from utils.image import resize_pieces
+from utils.image import image_and_mask
 
 output_dir = '/mnt/qinlikun/inpainting/features'
 if not os.path.exists(output_dir):
@@ -30,11 +30,11 @@ def extract_features(backbone, dataset='davis', batch_size=1):
     # load data
     if dataset == 'davis':
         val_dataset = Davis_dataset(data_root='/mnt/qinlikun/dataset/DAVIS',
-                                    size=(1792, 1792),
-                                    slice=8,
-                                    div=16,
+                                    size=(2240, 2240),
+                                    slice=10,
+                                    div=25,
                                     mode='val',
-                                    transform=resize_pieces
+                                    transform=image_and_mask
                                     )
         val_dataloader = DataLoader(val_dataset, batch_size=batch_size)
 
