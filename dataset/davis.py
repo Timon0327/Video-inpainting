@@ -7,7 +7,7 @@
 #       get: corrupted flows (forward and backward), features of 2N+1 neighboring frames, mask, ground-truth flows
 #       usage: training GCN and flow completion network in the back
 #  2. for test:
-#       get: corrupted flows (forward and backward), features of 2N+1 neighboring frames
+#       get: corrupted flows (forward and backward), features of 2N+1 neighboring frames, output_file
 #       usage: test GCN and flow completion network in the back
 #
 #  FlowNet
@@ -31,6 +31,7 @@ from torchvision.transforms import ToTensor
 import cv2 as cv
 import numpy as np
 import os
+import pickle
 import cvbase as cvb
 from utils.image import apply_mask_resize
 from cfgs import config
@@ -194,14 +195,18 @@ class ResnetInfer(Dataset):
         :param out_dir: the directory to store features
         :param slice: how many patches each frame is divided into in each direction, int
         :param div: how many batch are needed to process one frame (to save CUDA memory), int
-        :param N: get 2N + 1 frames in total, N frames before, N frames after. int
+        :param N: get 2N frames in total, N frames before, N frames after. int
 
         notice: the number of nodes in GCN is actually (2N+1) * slice * slice
         '''
         self.slice = slice
         self.div = div
         self.N = N
-        self.intervals = [1,2,4,6,9,12]
+        all_intervals = [0, 1, -1, 2, -2, 3, -4, 5, -7, 8]
+
+        # select frames with different offsets to form the nodes
+        self.intervals = all_intervals[:2 * N]
+        self.intervals.sort()
 
         self.data_root = data_root
         self.img_dir = os.path.join(data_root, 'JPEGImages', '480p')    # Full-Resolution
@@ -224,12 +229,15 @@ class ResnetInfer(Dataset):
         if not os.path.exists(self.file):
             with open(self.file, 'w') as f:
 
-                margin = self.intervals[N-1]
-                offsets = [0]
-                for j in range(N):
-                    offsets.append(self.intervals[j])
-                    offsets.append(-self.intervals[j])
-                offsets.sort()
+                # margin = self.intervals[N-1]
+                # offsets = [0]
+                # for j in range(N):
+                #     offsets.append(self.intervals[j])
+                #     offsets.append(-self.intervals[j])
+                # offsets.sort()
+
+                margin_left = self.intervals[0]
+                margin_right = self.intervals[-1]
 
                 for video in self.video_list:
                     os.mkdir(os.path.join(out_dir, video))
@@ -240,8 +248,8 @@ class ResnetInfer(Dataset):
 
                     # generate text file
                     for i in range(img_num):
-                        if i + margin < img_num and i - margin >= 0:
-                            for offset in offsets:
+                        if i + margin_right < img_num and i + margin_left >= 0:
+                            for offset in self.intervals:
                                 f.write(os.path.join(video, imgs[i + offset]))
                                 f.write(' ')
                             f.write(os.path.join(video, imgs[i][:-4] + '.pk'))
@@ -259,7 +267,7 @@ class ResnetInfer(Dataset):
                 filenames = line.split(' ')
 
                 tmp_frame = []
-                for k in range(2 * N + 1):
+                for k in range(2 * N):
                     tmp_frame.append(filenames[k])
 
                 self.frames.append(tmp_frame)
@@ -293,7 +301,7 @@ class GFCNetData(Dataset):
     '''
     dataset for Graph Flow Completion Network
     '''
-    def __init__(self, data_root, flow_dir=None, feature_dir=None, mask_dir=None, gt_dir=None):
+    def __init__(self, data_root, mode, flow_dir=None, feature_dir=None, mask_dir=None, gt_dir=None):
         '''
         initialize dataset for GFCNet
         data_root structure:
@@ -306,404 +314,129 @@ class GFCNetData(Dataset):
                 |-- flow (possibly)
                 |-- gt (possibly)
         :param data_root: the directory of data_root
+        :param mode: 'train', 'val' or 'test'
         :param flow_dir: the directory of flow files. If None, then use the one in data_root directory.
         :param feature_dir: the directory of feature files. If None, then use the one in data_root directory.
         :param mask_dir: the directory of mask files. If None, then use the one in data_root directory.
         :param gt_dir: the directory of gt flow files. If None, then use the one in data_root directory.
         '''
         self.data_root = data_root
+        self.mode = mode
 
+        # set path
         self.mask_dir = mask_dir if not mask_dir else os.path.join(data_root, 'masks')
         self.flow_dir = flow_dir if not flow_dir else os.path.join(data_root, 'flow')
         self.feature_dir = feature_dir if not feature_dir else os.path.join(data_root, 'feature')
         self.gt_dir = gt_dir if not gt_dir else os.path.join(data_root, 'gt')
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class Davis_dataset_ref(Dataset):
-    def __init__(self,
-                 data_root,
-                 flow_dir,
-                 gt_dir,
-                 size,
-                 mask_dir=None,
-                 train_file='./video_train.txt',
-                 test_file='./video_test.txt',
-                 val_file='./video_val.txt',
-                 slice=10,
-                 div=1,
-                 mode='val',
-                 transform=None):
-        '''
-        initialization of Dasvis_dataset
-        dataset structure:
-        data_root | -- Annotations
-                  | -- JPEGImages
-                  | -- ImageSets
-
-        there are 4 modes:
-        train, val -- get 2 adjacent frames, 2 mask of frames, 1 flow file, 1 gt flow file
-                        training or validation for GCN and flow completion
-        test -- get 2 adjacent frames, 2 mask of frames, 1 flow file
-                test for GCN and flow completion
-        flow -- get 2 adjacent frames, 2 mask of frames, 1 flow file path
-                generate flow of masked frames
-        :param data_root: the directory containing Annotations, JPEGImages, ImageSets
-        :param flow_dir: the directory to save flow files
-        :param gt_dir: the directory to save ground -ruth flow files, has the save stucture as JPEGImages
-        :param size: the size of image, tuple, (height, width)
-        :param slice: how many slices in each dimension (height, width), int
-        :param mask_dir: the directory saving masks
-        :param train_file: (for train)the path of the text file which stores filenames of the frames, the flow, and gt
-        :param test_file: (for test)the path of the text file which stores filenames of the frames, the flow, and gt
-        :param val_file: (for validation) ...
-        :param div: the number of batches one image to be divided, int
-        :param transform: the function to be applied to images
-        :param mode: str  train, val , test or flow
-        '''
-
-        # set up where flow files are stored
-        self.flow_dir = flow_dir
-        if not os.path.exists(flow_dir):
-            os.mkdir(flow_dir)
-
-        # set up ground-truth directory
-        self.gt_dir = gt_dir
-
-        # set up mask directory
-        self.mask_dir = mask_dir
-
-        self.size = size
-        self.slice = slice
-        self.div = div
-        # set path
+        # load video names
         if mode == 'train':
-            self.images_dir = os.path.join(data_root, 'JPEGImages', 'Full-Resolution')   # Full-Resolution
-            self.annotations_dir = os.path.join(data_root, 'Annotations', 'Full-Resolution')
-            video_file = os.path.join(data_root, 'ImageSets', '2017', 'train.txt')
+            self.video_file = os.path.join(data_root, 'ImageSets', '2017', 'train.txt')
         elif mode == 'val':
-            self.images_dir = os.path.join(data_root, 'JPEGImages', 'Full-Resolution')
-            self.annotations_dir = os.path.join(data_root, 'Annotations', 'Full-Resolution')
-            video_file = os.path.join(data_root, 'ImageSets', '2017', 'val.txt')
-        elif mode == 'test':
-            self.images_dir = os.path.join(data_root, 'JPEGImages', 'Full-Resolution')
-            video_file = os.path.join(data_root, 'ImageSets', '2017', 'test-dev.txt')
+            self.video_file = os.path.join(data_root, 'ImageSets', '2017', 'val.txt')
         else:
-            self.div = 1
-            self.slice = 1
+            self.video_file = os.path.join(data_root, 'ImageSets', '2017', 'test.txt')
 
-        # set functions to adjust images
-        self.transform = transform
-
-        # set mode
-        self.mode = mode
-
-        # read in names of video to be loaded
-        self.video_list = None
-        with open(video_file, 'r') as f:
+        with open(self.video_file, 'r') as f:
             tmp = f.readlines()
             self.video_list = [x[:-1] for x in tmp]
+            self.video_list.sort()
 
-        # video name
-        self.video_name = None
+        self.feature_list = []
+        self.flow_list_f = []          # list for forward flow
+        self.flow_list_b = []          # list for backward flow
+        self.mask1 = []                # list for previous mask
+        self.mask2 = []                # list for following mask
+        self.gt_list_f = []            # list for ground truth of forward flow
+        self.gt_list_b = []            # list for ground truth of backward flow
 
-        # counting number
-        self.count = 0
+        for video in self.video_list:
+            feature_names = os.listdir(os.path.join(self.feature_dir, video))
+            feature_names.sort()
 
-        # total number of images
-        self.total = 0
+            # get the list of all backward flow files
+            rflo_names = []
+            for file in os.listdir(os.path.join(self.flow_dir, video)):
+                if file.endswith('.rflo'):
+                    rflo_names.append(file)
+            rflo_names.sort()
 
-        # number of frames of each video
-        self.frame_num = []
+            for one in feature_names:
+                img_id = one.split('.')[0]
+                rflo_id = rflo_names.index(img_id + '.rflo') + 1
+                img2_id = rflo_names[rflo_id].split('.')[0]
 
-        # accumulated number of all images
-        self.acc_num = [0]
-        acc = 0
+                self.feature_list.append(os.path.join(video, one))
 
-        # check if text file is ready
-        if mode == 'train':
-            the_file = train_file
-        elif mode == 'test':
-            the_file = test_file
-        elif mode == 'val':
-            the_file = val_file
-        else:
-            the_file = './flow.txt'
+                self.flow_list_f.append(os.path.join(video, img_id + '.flo'))
+                self.flow_list_b.append(os.path.join(video, rflo_names[rflo_id]))
 
-        if mode in ['train', 'val'] and not os.path.exists(the_file):
-            with open(the_file, 'w') as f:
-                for one in self.video_list:
-                    # get the number of images per video
-                    imgs = os.listdir(os.path.join(self.images_dir, one))
-                    img_num = len(imgs)
+                self.mask1.append(os.path.join(video, img_id + '.png'))
+                self.mask2.append(os.path.join(video, img2_id + '.png'))
 
-                    # generate text file
-                    for i in range(img_num):
-                        if i + 1 < img_num:
-                            f.write(os.path.join(os.path.join(self.images_dir, one), imgs[i]))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(self.images_dir, one), imgs[i + 1]))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(mask_dir, 'one'), imgs[i][:-4] + '.png'))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(mask_dir, 'one'), imgs[i + 1][:-4] + '.png'))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(flow_dir, 'one'), imgs[i][:-4] + '.flo'))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(gt_dir, 'one'), imgs[i][:-4] + '.flo'))
-                            f.write('\n')
-
-                        if i - 1 >= 0:
-                            f.write(os.path.join(os.path.join(self.images_dir, one), imgs[i]))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(self.images_dir, one), imgs[i - 1]))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(mask_dir, 'one'), imgs[i][:-4] + '.png'))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(mask_dir, 'one'), imgs[i - 1][:-4] + '.png'))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(flow_dir, 'one'), imgs[i][:-4] + '.rflo'))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(gt_dir, 'one'), imgs[i][:-4] + '.rflo'))
-                            f.write('\n')
-
-                    # record the number of image in each video
-                    self.frame_num.append(img_num)
-                    acc += img_num
-                    self.acc_num.append(acc)
-                self.total = np.sum(self.frame_num)
-
-        elif mode == 'test' and not os.path.exists(the_file):
-            with open(the_file, 'w') as f:
-                for one in self.video_list:
-                    # get the number of images per video
-                    imgs = os.listdir(os.path.join(self.images_dir, one))
-                    img_num = len(imgs)
-
-                    # make directory for flow files
-                    os.mkdir(os.path.join(flow_dir, 'one'))
-
-                    # generate text file
-                    for i in range(img_num):
-                        if i + 1 < img_num:
-                            f.write(os.path.join(os.path.join(self.images_dir, one), imgs[i]))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(self.images_dir, one), imgs[i + 1]))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(flow_dir, 'one'), imgs[i][:-4] + '.flo'))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(self.annotations_dir, 'one'), imgs[i][:-4] + '.png'))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(self.annotations_dir, 'one'), imgs[i + 1][:-4] + '.png'))
-                            f.write('\n')
-
-                        if i - 1 >= 0:
-                            f.write(os.path.join(os.path.join(self.images_dir, one), imgs[i]))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(self.images_dir, one), imgs[i - 1]))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(flow_dir, 'one'), imgs[i][:-4] + '.rflo'))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(self.annotations_dir, 'one'), imgs[i][:-4] + '.png'))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(self.annotations_dir, 'one'), imgs[i - 1][:-4] + '.png'))
-                            f.write('\n')
-
-                    # record the number of image in each video
-                    self.frame_num.append(img_num)
-                    acc += img_num
-                    self.acc_num.append(acc)
-                self.total = np.sum(self.frame_num)
-
-        elif mode in ['train', 'val', 'test']:
-            # no need to generate text file
-            for one in self.video_list:
-                imgs = os.listdir(os.path.join(self.images_dir, one))
-                img_num = len(imgs)
-                self.frame_num.append(img_num)
-                acc += img_num
-                self.acc_num.append(acc)
-            self.total = np.sum(self.frame_num)
-        elif mode is 'flow':
-            with open(the_file, 'w') as f:
-                for one in self.video_list:
-                    # get the number of images per video
-                    imgs = os.listdir(os.path.join(self.images_dir, one))
-                    imgs.sort()
-                    img_num = len(imgs)
-
-                    # make directory for flow files
-                    os.mkdir(os.path.join(flow_dir, 'one'))
-
-                    # generate text file
-                    for i in range(img_num):
-                        if i + 1 < img_num:
-                            f.write(os.path.join(os.path.join(self.images_dir, one), imgs[i]))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(self.images_dir, one), imgs[i + 1]))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(flow_dir, 'one'), imgs[i][:-4] + '.flo'))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(self.annotations_dir, 'one'), imgs[i][:-4] + '.png'))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(self.annotations_dir, 'one'), imgs[i + 1][:-4] + '.png'))
-                            f.write('\n')
-
-                        if i - 1 >= 0:
-                            f.write(os.path.join(os.path.join(self.images_dir, one), imgs[i]))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(self.images_dir, one), imgs[i - 1]))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(flow_dir, 'one'), imgs[i][:-4] + '.rflo'))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(self.annotations_dir, 'one'), imgs[i][:-4] + '.png'))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(self.annotations_dir, 'one'), imgs[i - 1][:-4] + '.png'))
-                            f.write('\n')
-                    self.frame_num.append(img_num)
-                    acc += img_num
-                    self.acc_num.append(acc)
-                self.total = np.sum(self.frame_num)
-
-        self.frame1_list = []
-        self.frame2_list = []
-        self.flow_list = []
-        self.gt_list = []
-        self.mask1_list = []
-        self.mask2_list = []
-        self.length = 0
-
-        with open(the_file, 'r') as f:
-            for line in f:
-                self.length += 1
-                line = line.strip(' ')
-                line = line.strip('\n')
-
-                line_split = line.split(' ')
-                if mode in ['train', 'val']:
-                    self.frame1_list.append(line_split[0])
-                    self.frame2_list.append(line_split[1])
-                    self.mask1_list.append(line_split[2])
-                    self.mask2_list.append(line_split[3])
-                    self.flow_list.append(line_split[4])
-                    self.gt_list.append(line_split[5])
-                else:
-                    self.frame1_list.append(line_split[0])
-                    self.frame2_list.append(line_split[1])
-                    self.flow_list.append(line_split[2])
-                    self.mask1_list.append(line_split[3])
-                    self.mask2_list.append(line_split[4])
+                self.gt_list_f.append(os.path.join(video, img_id + '.flo'))
+                self.gt_list_b.append(os.path.join(video, img2_id + '.rflo'))
 
     def __len__(self):
-        '''
-
-        :return:
-        '''
-        return self.length
+        return len(self.feature_list)
 
     def __getitem__(self, idx):
         '''
-        get one image in the dataset
-        :param idx: the id of the image, int
+        get corrupted forward and backward flow, features of 2N frames
+        if the mode is 'train' or 'val, get 2 masks and 2 ground-truth flow in addition
+
+        :param idx:
         :return:
         '''
-        # find the video the image corresponds to
-        video_id = 0
-        for i, acc in enumerate(self.acc_num):
-            if idx >= acc:
-                continue
-            else:
-                video_id = i - 1
-                break
-        self.video_name = self.video_list[video_id]
 
-        # find and load the frame
-        img_id = idx - self.acc_num[video_id]
-        # imgs_list = os.listdir(os.path.join(self.images_dir, self.video_name))
-        # imgs_list.sort()
-        # frame = cv.imread(os.path.join(self.images_dir, self.video_name, imgs_list[img_id]))
+        with open(os.path.join(self.feature_dir, self.feature_list[idx]), 'rb') as f:
+            feature = pickle.load(f)
+            feature = torch.from_numpy(feature)
+            feature.requires_grad_(False)
 
-        frame1 = cv.imread(self.frame1_list[idx])
-        frame2 = cv.imread(self.frame2_list[idx])
+        flow_f = cvb.read_flow(os.path.join(self.flow_dir, self.flow_list_f[idx]))
+        flow_b = cvb.read_flow(os.path.join(self.flow_dir, self.flow_list_b[idx]))
+        flow_f = torch.from_numpy(flow_f)
+        flow_b = torch.from_numpy(flow_b)
+        flow_f.requires_grad_(False)
+        flow_b.requires_grad_(False)
 
-        mask1 = cv.imread(self.frame1_list[idx])[2]
-        mask2 = cv.imread(self.frame2_list[idx])[2]
+        if self.mode == 'train' or self.mode == 'val':
+            mask1 = cv.imread(os.path.join(self.mask_dir, self.mask1[idx]))[:, :, 2]
+            mask2 = cv.imread(os.path.join(self.mask_dir, self.mask2[idx]))[:, :, 2]
 
-        whole_frames1, mask1 = self.transform(frame=frame1,
-                                            size=self.size,
-                                            slice=self.slice,
-                                            mask=mask1,
-                                            margin=(50,50),
-                                            rect_shape=(270,480))
-        whole_frames2, mask2 = self.transform(frame=frame2,
-                                            size=self.size,
-                                            slice=self.slice,
-                                            mask=mask2,
-                                            margin=(50, 50),
-                                            rect_shape=(270, 480))   # whole_frames1 and 2 can be a Tensor in [C, H, W]
+            mask1 = np.concatenate([mask1, mask1], axis=2)
+            mask2 = np.concatenate([mask2, mask2], axis=2)
 
-        # divide one image to several batches
-        frames1 = []
-        if self.div != 1:
-            for one in torch.chunk(whole_frames1, self.div, dim=0):
-                frames1.append(one)
-        else:
-            frames1.append(whole_frames1)
+            mask1 = torch.from_numpy(mask1)
+            mask1.requires_grad_(False)
+            mask2 = torch.from_numpy(mask2)
+            mask2.requires_grad_(False)
 
-        frames2 = []
-        if self.div != 1:
-            for one in torch.chunk(whole_frames2, self.div, dim=0):
-                frames2.append(one)
-        else:
-            frames2.append(whole_frames2)
+            gt_f = cvb.read_flow(os.path.join(self.gt_dir, self.gt_list_f[idx]))
+            gt_b = cvb.read_flow(os.path.join(self.gt_dir, self.gt_list_b[idx]))
 
-        if self.mode in ['train', 'val']:
-            flow = cvb.read_flow(self.flow_list[idx])
-            gt = cvb.read_flow(self.gt_list[idx])
-            result = {'image1': frames1,
-                      'image2': frames2,
+            gt_f = torch.from_numpy(gt_f)
+            gt_f.requires_grad_(False)
+            gt_b = torch.from_numpy(gt_b)
+            gt_b.requires_grad_(False)
+
+            result = {'feature': feature,
+                      'flow_forward': flow_f,
+                      'flow_backward': flow_b,
                       'mask1': mask1,
                       'mask2': mask2,
-                      'flow': flow,
-                      'gt': gt,
-                      'video': self.video_name,
-                      'id': img_id,
-                      }
-        elif self.mode is 'test':
-            flow = cvb.read_flow(self.flow_list[idx])
-            result = {'image1': frames1,
-                      'image2': frames2,
-                      'mask1': mask1,
-                      'mask2': mask2,
-                      'flow': flow,
-                      'video': self.video_name,
-                      'id': img_id,
-                      }
-        else:
-            result = {'image1': frames1,
-                      'image2': frames2,
-                      'mask1': mask1,
-                      'mask2': mask2,
-                      'flow_path': self.flow_list[idx],
-                      'video': self.video_name,
-                      'id': img_id,
-                      }
+                      'gt_forward': gt_f,
+                      'gt_backward': gt_b}
 
-        return result
+            return result
+        else:
+            result = {'feature': feature,
+                      'flow_forward': flow_f,
+                      'flow_backward': flow_b,
+                      'output_forward': self.flow_list_f[idx],
+                      'output_backward': self.flow_list_b[idx]}
+            return result
 
 
 if __name__ == '__main__':
