@@ -1,17 +1,340 @@
 '''
 #  filename: davis.py
 #  customize dataset for DAVIS
+#  altogether 3 types of dataset for 5 occasions:
+#  GFCNet
+#  1. for training and validation
+#       get: corrupted flows (forward and backward), features of 2N+1 neighboring frames, mask, ground-truth flows
+#       usage: training GCN and flow completion network in the back
+#  2. for test:
+#       get: corrupted flows (forward and backward), features of 2N+1 neighboring frames
+#       usage: test GCN and flow completion network in the back
+#
+#  FlowNet
+#  3. generate corrupted flow
+#       get: 2 consecutive frames
+#       usage: input for inferring stage of FlowNet2
+#  4. generate ground truth flow
+#       get: 2 consecutive frames
+#       usage: input for inferring stage of FlowNet2
+#
+#  ResNet
+#  5. generate features of corrupted frames
+#       get: 2N+1 consecutive frames
+#       usage: input for Resnet
+#
 #  Likun Qin, 2021
 '''
 import torch
 from torch.utils.data.dataset import Dataset
-from utils.image import image_and_mask
+from torchvision.transforms import ToTensor
 import cv2 as cv
 import numpy as np
 import os
 import cvbase as cvb
+from utils.image import apply_mask_resize
+from cfgs import config
 
-class Davis_dataset(Dataset):
+totensor = ToTensor()
+
+
+class FlownetInfer(Dataset):
+    '''
+    dataset for FlowNet2
+    '''
+    def __init__(self, data_root, mode, out_dir, mask_dir=None):
+        '''
+        initialization
+        data_root structure:
+            |-- dataroot
+                |-- Annotations
+                |-- JPEGImages
+                |-- masks
+                |-- ImageSets
+                |-- feature (possibly)
+                |-- flow (possibly)
+                |-- gt (possibly)
+        modes:
+            gt -- generate ground-truth with raw complete frames
+            restore -- generate flow with corrupted frames
+        :param data_root: the directory of dataroot
+        :param mode: str, 'gt' or 'restore'
+        :param out_dir: the directory to store output flow files
+        :param mask_dir: the directory storing masks. If none, use self-generated masks then
+        '''
+        self.data_root = data_root
+        self.mode = mode
+        self.out_dir = out_dir
+        if not os.path.exists(out_dir):
+            os.mkdir(out_dir)
+
+        # set path
+        self.img_dir = os.path.join(data_root, 'JPEGImages', '480p')  # Full-Resolution
+        if not mask_dir:
+            self.mask_dir = os.path.join(data_root, 'masks')
+        else:
+            self.mask_dir = mask_dir
+
+        # record video names
+        self.video_list = os.listdir(self.img_dir)
+        self.video_list.sort()
+
+        if mode == 'gt':
+            self.file = os.path.join(data_root, 'ImageSets', '2017', 'gt.txt')
+        else:
+            self.file = os.path.join(data_root, 'ImageSets', '2017', 'bad_flow.txt')
+
+        if not os.path.exists(self.file):
+            with open(self.file, 'w') as f:
+                for video in self.video_list:
+                    os.mkdir(os.path.join(out_dir, video))
+                    # get the number of images per video
+                    imgs = os.listdir(os.path.join(self.img_dir, video))
+                    imgs.sort()
+                    img_num = len(imgs)
+
+                    # generate text file
+                    for i in range(img_num):
+                        if i + 1 < img_num:
+                            f.write(os.path.join(os.path.join(self.img_dir, video), imgs[i]))
+                            f.write(' ')
+                            f.write(os.path.join(os.path.join(self.img_dir, video), imgs[i + 1]))
+                            f.write(' ')
+                            f.write(os.path.join(os.path.join(out_dir, video), imgs[i][:-4] + '.flo'))
+                            if mode == 'restore':
+                                f.write(' ')
+                                f.write(os.path.join(os.path.join(self.mask_dir, video), imgs[i][:-4] + '.png'))
+                                f.write(' ')
+                                f.write(os.path.join(os.path.join(self.mask_dir, video), imgs[i + 1][:-4] + '.png'))
+                            f.write('\n')
+
+                        if i - 1 >= 0:
+                            f.write(os.path.join(os.path.join(self.img_dir, video), imgs[i]))
+                            f.write(' ')
+                            f.write(os.path.join(os.path.join(self.img_dir, video), imgs[i - 1]))
+                            f.write(' ')
+                            f.write(os.path.join(os.path.join(out_dir, video), imgs[i][:-4] + '.rflo'))
+                            if mode == 'restore':
+                                f.write(' ')
+                                f.write(os.path.join(os.path.join(self.mask_dir, video), imgs[i][:-4] + '.png'))
+                                f.write(' ')
+                                f.write(os.path.join(os.path.join(self.mask_dir, video), imgs[i - 1][:-4] + '.png'))
+                            f.write('\n')
+
+
+        self.frame_list1 = []
+        self.frame_list2 = []
+        self.flow_list = []
+        self.mask_list1 = []
+        self.mask_list2 = []
+
+        with open(self.file, 'r') as f:
+            for line in f:
+                line = line.strip(' ')
+                line = line.strip('\n')
+                filenames = line.split(' ')
+                self.frame_list1.append(filenames[0])
+                self.frame_list2.append(filenames[1])
+                self.flow_list.append(filenames[2])
+                if mode == 'restore':
+                    self.mask_list1.append(filenames[3])
+                    self.mask_list2.append(filenames[4])
+
+    def __len__(self):
+        return len(self.frame_list1)
+
+    def __getitem__(self, idx):
+        '''
+        get 2 consecutive frames and the filename of output flow file
+        :param idx:
+        :return:
+        '''
+
+        frame1 = cv.imread(self.frame_list1[idx])
+        frame2 = cv.imread(self.frame_list2[idx])
+
+        if self.mode == 'gt':
+            frame1 = cv.resize(frame1, config.IMG_SIZE)
+            frame2 = cv.resize(frame2, config.IMG_SIZE)
+            img1 = totensor(frame1)
+            img2 = totensor(frame2)
+
+        else:
+            mask1 = cv.imread(self.mask_list1[idx])[:, :, 2]
+            mask2 = cv.imread(self.mask_list2[idx])[:, :, 2]
+
+            img1 = apply_mask_resize(frame1, size=config.IMG_SIZE, slice=0, mask=mask1)
+            img2 = apply_mask_resize(frame2, size=config.IMG_SIZE, slice=0, mask=mask2)
+
+        result = {'frame1': img1,
+                  'frame2': img2,
+                  'flow_file': self.flow_list[idx]}
+
+        return result
+
+
+class ResnetInfer(Dataset):
+    '''
+    dataset for flow extraction
+    '''
+    def __init__(self, data_root, mask_dir, out_dir, slice, div, N):
+        '''
+        initialize dataset
+        data_root structure:
+            |-- dataroot
+                |-- Annotations
+                |-- JPEGImages
+                |-- masks
+                |-- ImageSets
+                |-- feature (possibly)
+                |-- flow (possibly)
+                |-- gt (possibly)
+        :param data_root: the directory of data_root
+        :param mask_dir: the directory of masks. if None, then use self-generated masks
+        :param out_dir: the directory to store features
+        :param slice: how many patches each frame is divided into in each direction, int
+        :param div: how many batch are needed to process one frame (to save CUDA memory), int
+        :param N: get 2N + 1 frames in total, N frames before, N frames after. int
+
+        notice: the number of nodes in GCN is actually (2N+1) * slice * slice
+        '''
+        self.slice = slice
+        self.div = div
+        self.N = N
+        self.intervals = [1,2,4,6,9,12]
+
+        self.data_root = data_root
+        self.img_dir = os.path.join(data_root, 'JPEGImages', '480p')    # Full-Resolution
+
+        if mask_dir:
+            self.mask_dir = mask_dir
+        else:
+            self.mask_dir = os.path.join(data_root, 'masks')
+
+        self.out_dir = out_dir
+        if not os.path.exists(out_dir):
+            os.mkdir(out_dir)
+
+        # record video names
+        self.video_list = os.listdir(self.img_dir)
+        self.video_list.sort()
+
+        self.file = os.path.join(data_root, 'ImageSets', '2017', 'feature.txt')
+
+        if not os.path.exists(self.file):
+            with open(self.file, 'w') as f:
+
+                margin = self.intervals[N-1]
+                offsets = [0]
+                for j in range(N):
+                    offsets.append(self.intervals[j])
+                    offsets.append(-self.intervals[j])
+                offsets.sort()
+
+                for video in self.video_list:
+                    os.mkdir(os.path.join(out_dir, video))
+                    # get the number of images per video
+                    imgs = os.listdir(os.path.join(self.img_dir, video))
+                    imgs.sort()
+                    img_num = len(imgs)
+
+                    # generate text file
+                    for i in range(img_num):
+                        if i + margin < img_num and i - margin >= 0:
+                            for offset in offsets:
+                                f.write(os.path.join(video, imgs[i + offset]))
+                                f.write(' ')
+                            f.write(os.path.join(video, imgs[i][:-4] + '.pk'))
+                            f.write('\n')
+                        else:
+                            continue
+
+        # read in the txt file
+        self.frames = []
+        self.out_files = []
+        with open(self.file, 'r') as file:
+            for line in file:
+                line = line.strip(' ')
+                line = line.strip('\n')
+                filenames = line.split(' ')
+
+                tmp_frame = []
+                for k in range(2 * N + 1):
+                    tmp_frame.append(filenames[k])
+
+                self.frames.append(tmp_frame)
+                self.out_files.append(filenames[-1])
+
+    def __len__(self):
+        return len(self.out_files)
+
+    def __getitem__(self, idx):
+        '''
+        get 2N+1 frames in a list, and the name of the output pk file
+        :param idx:
+        :return:
+        '''
+        frames = []
+
+        for one in self.frames[idx]:
+            frame = cv.imread(os.path.join(self.img_dir, one))
+            mask = cv.imread(os.path.join(self.mask_dir, one[:-4] + '.png'))[:, :, 2]
+
+            img = apply_mask_resize(frame, size=config.IMG_SIZE, slice=0, mask=mask)
+            frames.append(img)
+
+        result = {'frames': frames,
+                  'out_file': os.path.join(self.out_dir, self.out_files[idx])}
+
+        return result
+
+
+class GFCNetData(Dataset):
+    '''
+    dataset for Graph Flow Completion Network
+    '''
+    def __init__(self, data_root, flow_dir=None, feature_dir=None, mask_dir=None, gt_dir=None):
+        '''
+        initialize dataset for GFCNet
+        data_root structure:
+            |-- dataroot
+                |-- Annotations
+                |-- JPEGImages
+                |-- masks
+                |-- ImageSets
+                |-- feature (possibly)
+                |-- flow (possibly)
+                |-- gt (possibly)
+        :param data_root: the directory of data_root
+        :param flow_dir: the directory of flow files. If None, then use the one in data_root directory.
+        :param feature_dir: the directory of feature files. If None, then use the one in data_root directory.
+        :param mask_dir: the directory of mask files. If None, then use the one in data_root directory.
+        :param gt_dir: the directory of gt flow files. If None, then use the one in data_root directory.
+        '''
+        self.data_root = data_root
+
+        self.mask_dir = mask_dir if not mask_dir else os.path.join(data_root, 'masks')
+        self.flow_dir = flow_dir if not flow_dir else os.path.join(data_root, 'flow')
+        self.feature_dir = feature_dir if not feature_dir else os.path.join(data_root, 'feature')
+        self.gt_dir = gt_dir if not gt_dir else os.path.join(data_root, 'gt')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class Davis_dataset_ref(Dataset):
     def __init__(self,
                  data_root,
                  flow_dir,
@@ -220,6 +543,7 @@ class Davis_dataset(Dataset):
                 for one in self.video_list:
                     # get the number of images per video
                     imgs = os.listdir(os.path.join(self.images_dir, one))
+                    imgs.sort()
                     img_num = len(imgs)
 
                     # make directory for flow files
@@ -383,15 +707,18 @@ class Davis_dataset(Dataset):
 
 
 if __name__ == '__main__':
-    dataset = Davis_dataset(data_root='/home/captain/dataset/DAVIS/DAVIS-semisupervised/DAVIS-trainval',
-                            size=(800, 800),
-                            slice=4,
-                            div=4,
-                            mode='val',
-                            transform=image_and_mask
-                            )
+    # dataset = FlownetInfer(data_root='/home/captain/dataset/tiny_DAVIS',
+    #                         mode='restore',
+    #                         out_dir='/home/captain/dataset/tiny_DAVIS/flow',
+    #                         mask_dir=None)
+    dataset = ResnetInfer(data_root='/home/captain/dataset/tiny_DAVIS',
+                          mask_dir=None,
+                          out_dir='/home/captain/dataset/tiny_DAVIS/feature',
+                          slice=config.SLICE,
+                          div=config.DIV,
+                          N=config.N)
     print(len(dataset))
-    res = dataset.__getitem__(100)
+    res = dataset.__getitem__(5)
     print('data loaded')
 
 

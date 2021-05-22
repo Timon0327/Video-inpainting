@@ -71,7 +71,7 @@ def rand_bbox_mask(image_shape, margin, rect_shape):
     w = rect_shape[1]
     h = rect_shape[0]
 
-    mask[y: y + h, x: x + w] = 1
+    mask[y: y + h, x: x + w] = 128
     return mask
 
 
