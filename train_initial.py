@@ -24,19 +24,19 @@ parser = argparse.ArgumentParser()
 
 # training options
 parser.add_argument('--save_dir', type=str, default='/mnt/qinlikun/inpainting')
-parser.add_argument('--model_name', type=str, default=None)
+# parser.add_argument('--model_name', type=str, default=None)
 
-parser.add_argument('--max_iter', type=int, default=100000)
-parser.add_argument('--batch_size', type=int, default=32)
-parser.add_argument('--n_threads', type=int, default=32)
+parser.add_argument('--max_iter', type=int, default=config.MAX_ITER)
+parser.add_argument('--batch_size', type=int, default=config.BATCH_SIZE)
+parser.add_argument('--n_threads', type=int, default=config.N_THREADS)
 parser.add_argument('--resume', action='store_true')
 
-parser.add_argument('--LR', type=float, default=1e-4)
-parser.add_argument('--LAMBDA_SMOOTH', type=float, default=0.1)
-parser.add_argument('--LAMBDA_HARD', type=float, default=2.)
+parser.add_argument('--LR', type=float, default=config.LR)
+parser.add_argument('--LAMBDA_SMOOTH', type=float, default=config.LAMBDA_SMOOTH)
+parser.add_argument('--LAMBDA_HARD', type=float, default=config.LAMBDA_HARD)
 # parser.add_argument('--BETA1', type=float, default=0.9)
 # parser.add_argument('--BETA2', type=float, default=0.999)
-parser.add_argument('--WEIGHT_DECAY', type=float, default=0.00004)
+parser.add_argument('--WEIGHT_DECAY', type=float, default=config.WEIGHTED_DECAY)
 
 # parser.add_argument('--IMAGE_SHAPE', type=list, default=config.IMG_SIZE)  # [240, 424, 3]
 # parser.add_argument('--RES_SHAPE', type=list, default=[240, 424, 3])
@@ -45,7 +45,7 @@ parser.add_argument('--WEIGHT_DECAY', type=float, default=0.00004)
 # parser.add_argument('--PRETRAINED', action='store_true')
 # parser.add_argument('--PRETRAINED_MODEL', type=str, default=None)
 parser.add_argument('--RESNET_PRETRAIN_MODEL', type=str,
-                    default='pretrained_models/models/resnet50-19c8e357.pth')
+                    default=config.RESNET50_WEIGHT)
 # parser.add_argument('--TRAIN_LIST', type=str, default=None)
 # parser.add_argument('--EVAL_LIST', type=str, default=None)
 # parser.add_argument('--MASK_ROOT', type=str, default=None)
@@ -71,9 +71,9 @@ args = parser.parse_args()
 
 def main():
 
-    image_size = [args.IMAGE_SHAPE[0], args.IMAGE_SHAPE[1]]
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    model_save_dir = args.save_dir + '/GCN/'
+    model_save_dir = args.save_dir + '/ckpt/'
     sample_dir = args.save_dir + '/images/'
     log_dir = args.save_dir + '/log/'
 
@@ -96,6 +96,10 @@ def main():
 
     gcn_temporal = GCN(node_num=config.SLICE * config.SLICE * config.N,
                        layers=3)
+    if torch.cuda.device_count() > 1:
+        gcn_temporal = torch.nn.DataParallel(gcn_temporal)
+        gcn_temporal = gcn_temporal.to(device)
+        print(torch.cuda.device_count())
 
     flow_resnet = resnet_models.Flow_Branch_Multi(input_chanels=33, NoLabels=2)  # input_channel must be changed
     saved_state_dict = torch.load(args.RESNET_PRETRAIN_MODEL)
