@@ -172,7 +172,7 @@ class spatial(nn.Module):
         # print(X)
         return output
 
-
+'''
 dataset = build_graph.nodes
 new_data = torch.zeros(len(dataset), dataset[0].shape[1], dtype=torch.float32)
 for i in range(len(dataset)):
@@ -189,3 +189,5 @@ model_temporal = GCN_temporal(adj_t, feature_dim, out_dim)
 model_sptial = GCN_spatial(adj_s, feature_dim, out_dim)
 # feature_spa = model_spa(new_data)
 # a = adj.mm(new_data)
+'''
+

@@ -65,7 +65,15 @@ class FlownetInfer(Dataset):
         '''
         self.data_root = data_root
         self.mode = mode
-        self.out_dir = out_dir
+
+        if not out_dir:
+            if mode == 'gt':
+                self.out_dir = os.path.join(data_root, 'gt')
+            else:
+                self.out_dir = os.path.join(data_root, 'flow')
+        else:
+            self.out_dir = out_dir
+
         if not os.path.exists(out_dir):
             os.mkdir(out_dir)
 
@@ -88,7 +96,8 @@ class FlownetInfer(Dataset):
         if not os.path.exists(self.file):
             with open(self.file, 'w') as f:
                 for video in self.video_list:
-                    os.mkdir(os.path.join(out_dir, video))
+                    if os.path.exists(os.path.join(out_dir, video)):
+                        os.mkdir(os.path.join(out_dir, video))
                     # get the number of images per video
                     imgs = os.listdir(os.path.join(self.img_dir, video))
                     imgs.sort()
@@ -216,9 +225,13 @@ class ResnetInfer(Dataset):
         else:
             self.mask_dir = os.path.join(data_root, 'masks')
 
-        self.out_dir = out_dir
-        if not os.path.exists(out_dir):
-            os.mkdir(out_dir)
+        if out_dir:
+            self.out_dir = out_dir
+        else:
+            self.out_dir = os.path.join(data_root, 'feature')
+
+        if not os.path.exists(self.out_dir):
+            os.mkdir(self.out_dir)
 
         # record video names
         self.video_list = os.listdir(self.img_dir)
@@ -240,7 +253,8 @@ class ResnetInfer(Dataset):
                 margin_right = self.intervals[-1]
 
                 for video in self.video_list:
-                    os.mkdir(os.path.join(out_dir, video))
+                    if not os.path.exists(os.path.join(self.out_dir, video)):
+                        os.mkdir(os.path.join(self.out_dir, video))
                     # get the number of images per video
                     imgs = os.listdir(os.path.join(self.img_dir, video))
                     imgs.sort()
@@ -288,7 +302,7 @@ class ResnetInfer(Dataset):
             frame = cv.imread(os.path.join(self.img_dir, one))
             mask = cv.imread(os.path.join(self.mask_dir, one[:-4] + '.png'))[:, :, 2]
 
-            img = apply_mask_resize(frame, size=config.IMG_SIZE, slice=0, mask=mask)
+            img = apply_mask_resize(frame, size=config.IMG_SIZE, slice=self.slice, mask=mask)
             frames.append(img)
 
         result = {'frames': frames,
@@ -396,60 +410,57 @@ class GFCNetData(Dataset):
 
         flow_f = cvb.read_flow(os.path.join(self.flow_dir, self.flow_list_f[idx]))
         flow_b = cvb.read_flow(os.path.join(self.flow_dir, self.flow_list_b[idx]))
-        flow_f = torch.from_numpy(flow_f)
-        flow_b = torch.from_numpy(flow_b)
-        flow_f.requires_grad_(False)
-        flow_b.requires_grad_(False)
+        flow_f = torch.from_numpy(flow_f[np.newaxis, :, :, :])
+        flow_b = torch.from_numpy(flow_b[np.newaxis, :, :, :])
+        flows = torch.cat([flow_f, flow_b], dim=0)
+        flows.requires_grad_(False)
 
         if self.mode == 'train' or self.mode == 'val':
             mask1 = cv.imread(os.path.join(self.mask_dir, self.mask1[idx]))[:, :, 2]
             mask2 = cv.imread(os.path.join(self.mask_dir, self.mask2[idx]))[:, :, 2]
 
-            mask1 = np.concatenate([mask1, mask1], axis=2)
-            mask2 = np.concatenate([mask2, mask2], axis=2)
+            mask1 = np.concatenate([mask1[:, :, np.newaxis], mask1[:, :, np.newaxis]], axis=2)
+            mask2 = np.concatenate([mask2[:, :, np.newaxis], mask2[:, :, np.newaxis]], axis=2)
 
-            mask1 = torch.from_numpy(mask1)
-            mask1.requires_grad_(False)
-            mask2 = torch.from_numpy(mask2)
-            mask2.requires_grad_(False)
+            mask1 = torch.from_numpy(mask1[np.newaxis, :, :, :])
+            mask2 = torch.from_numpy(mask2[np.newaxis, :, :, :])
+            masks = torch.cat([mask1, mask2], dim=0)
+            masks.requires_grad_(False)
 
             gt_f = cvb.read_flow(os.path.join(self.gt_dir, self.gt_list_f[idx]))
             gt_b = cvb.read_flow(os.path.join(self.gt_dir, self.gt_list_b[idx]))
 
-            gt_f = torch.from_numpy(gt_f)
-            gt_f.requires_grad_(False)
-            gt_b = torch.from_numpy(gt_b)
-            gt_b.requires_grad_(False)
+            gt_f = torch.from_numpy(gt_f[np.newaxis, :, :, :])
+            gt_b = torch.from_numpy(gt_b[np.newaxis, :, :, :])
+            gts = torch.cat([gt_f, gt_b], dim=0)
+            gts.requires_grad_(False)
 
-            result = {'feature': feature,
-                      'flow_forward': flow_f,
-                      'flow_backward': flow_b,
-                      'mask1': mask1,
-                      'mask2': mask2,
-                      'gt_forward': gt_f,
-                      'gt_backward': gt_b}
+            result = {'feature': feature,       #
+                      'flows': flows,           # shape [2, height, width, 2]
+                      'masks': masks,           # shape [2, height, width, 2]
+                      'gts': gts                # shape [2, height, width, 2]
+                     }
 
             return result
         else:
             result = {'feature': feature,
-                      'flow_forward': flow_f,
-                      'flow_backward': flow_b,
+                      'flows': flows,
                       'output_forward': self.flow_list_f[idx],
                       'output_backward': self.flow_list_b[idx]}
             return result
 
 
 if __name__ == '__main__':
-    # dataset = FlownetInfer(data_root='/home/captain/dataset/tiny_DAVIS',
-    #                         mode='restore',
-    #                         out_dir='/home/captain/dataset/tiny_DAVIS/flow',
-    #                         mask_dir=None)
-    dataset = ResnetInfer(data_root='/home/captain/dataset/tiny_DAVIS',
-                          mask_dir=None,
-                          out_dir='/home/captain/dataset/tiny_DAVIS/feature',
-                          slice=config.SLICE,
-                          div=config.DIV,
-                          N=config.N)
+    dataset = FlownetInfer(data_root='/home/captain/dataset/tiny_DAVIS',
+                            mode='restore',
+                            out_dir='/home/captain/dataset/tiny_DAVIS/flow',
+                            mask_dir=None)
+    # dataset = ResnetInfer(data_root='/home/captain/dataset/tiny_DAVIS',
+    #                       mask_dir=None,
+    #                       out_dir='/home/captain/dataset/tiny_DAVIS/feature',
+    #                       slice=config.SLICE,
+    #                       div=config.DIV,
+    #                       N=config.N)
     print(len(dataset))
     res = dataset.__getitem__(5)
     print('data loaded')
