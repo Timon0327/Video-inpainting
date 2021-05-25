@@ -73,7 +73,7 @@ def extract_features(backbone, dataset='davis', batch_size=1):
             print(batch)
 
         # save features
-        output_file = sample['out_file']
+        output_file = sample['out_file'][0]
         print('output at ', output_file)
         with open(output_file, 'wb') as f:
             pickle.dump(results, f)            # each pk file stores a list of tensor, which has size of [N, 2048]
