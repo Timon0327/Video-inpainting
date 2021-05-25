@@ -74,8 +74,8 @@ class FlownetInfer(Dataset):
         else:
             self.out_dir = out_dir
 
-        if not os.path.exists(out_dir):
-            os.mkdir(out_dir)
+        if not os.path.exists(self.out_dir):
+            os.mkdir(self.out_dir)
 
         # set path
         self.img_dir = os.path.join(data_root, 'JPEGImages', '480p')  # Full-Resolution
@@ -451,16 +451,16 @@ class GFCNetData(Dataset):
 
 
 if __name__ == '__main__':
-    dataset = FlownetInfer(data_root='/home/captain/dataset/tiny_DAVIS',
-                            mode='restore',
-                            out_dir='/home/captain/dataset/tiny_DAVIS/flow',
-                            mask_dir=None)
-    # dataset = ResnetInfer(data_root='/home/captain/dataset/tiny_DAVIS',
-    #                       mask_dir=None,
-    #                       out_dir='/home/captain/dataset/tiny_DAVIS/feature',
-    #                       slice=config.SLICE,
-    #                       div=config.DIV,
-    #                       N=config.N)
+    # dataset = FlownetInfer(data_root='/home/captain/dataset/tiny_DAVIS',
+    #                         mode='restore',
+    #                         out_dir='/home/captain/dataset/tiny_DAVIS/flow',
+    #                         mask_dir=None)
+    dataset = ResnetInfer(data_root='/home/captain/dataset/tiny_DAVIS',
+                          mask_dir=None,
+                          out_dir=None,
+                          slice=config.SLICE,
+                          div=config.DIV,
+                          N=config.N)
     print(len(dataset))
     res = dataset.__getitem__(5)
     print('data loaded')
