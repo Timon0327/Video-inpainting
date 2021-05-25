@@ -27,6 +27,7 @@
 '''
 import torch
 from torch.utils.data.dataset import Dataset
+from torch.utils.data import DataLoader
 from torchvision.transforms import ToTensor
 import cv2 as cv
 import numpy as np
@@ -96,8 +97,8 @@ class FlownetInfer(Dataset):
         if not os.path.exists(self.file):
             with open(self.file, 'w') as f:
                 for video in self.video_list:
-                    if os.path.exists(os.path.join(out_dir, video)):
-                        os.mkdir(os.path.join(out_dir, video))
+                    if os.path.exists(os.path.join(self.out_dir, video)):
+                        os.mkdir(os.path.join(self.out_dir, video))
                     # get the number of images per video
                     imgs = os.listdir(os.path.join(self.img_dir, video))
                     imgs.sort()
@@ -110,7 +111,7 @@ class FlownetInfer(Dataset):
                             f.write(' ')
                             f.write(os.path.join(os.path.join(self.img_dir, video), imgs[i + 1]))
                             f.write(' ')
-                            f.write(os.path.join(os.path.join(out_dir, video), imgs[i][:-4] + '.flo'))
+                            f.write(os.path.join(os.path.join(self.out_dir, video), imgs[i][:-4] + '.flo'))
                             if mode == 'restore':
                                 f.write(' ')
                                 f.write(os.path.join(os.path.join(self.mask_dir, video), imgs[i][:-4] + '.png'))
@@ -123,7 +124,7 @@ class FlownetInfer(Dataset):
                             f.write(' ')
                             f.write(os.path.join(os.path.join(self.img_dir, video), imgs[i - 1]))
                             f.write(' ')
-                            f.write(os.path.join(os.path.join(out_dir, video), imgs[i][:-4] + '.rflo'))
+                            f.write(os.path.join(os.path.join(self.out_dir, video), imgs[i][:-4] + '.rflo'))
                             if mode == 'restore':
                                 f.write(' ')
                                 f.write(os.path.join(os.path.join(self.mask_dir, video), imgs[i][:-4] + '.png'))
@@ -451,18 +452,24 @@ class GFCNetData(Dataset):
 
 
 if __name__ == '__main__':
-    # dataset = FlownetInfer(data_root='/home/captain/dataset/tiny_DAVIS',
-    #                         mode='restore',
-    #                         out_dir='/home/captain/dataset/tiny_DAVIS/flow',
-    #                         mask_dir=None)
-    dataset = ResnetInfer(data_root='/home/captain/dataset/tiny_DAVIS',
-                          mask_dir=None,
-                          out_dir=None,
-                          slice=config.SLICE,
-                          div=config.DIV,
-                          N=config.N)
+    dataset = FlownetInfer(data_root='/home/captain/dataset/tiny_DAVIS',
+                            mode='restore',
+                            out_dir='/home/captain/dataset/tiny_DAVIS/flow',
+                            mask_dir=None)
+    # dataset = ResnetInfer(data_root='/home/captain/dataset/tiny_DAVIS',
+    #                       mask_dir=None,
+    #                       out_dir=None,
+    #                       slice=config.SLICE,
+    #                       div=config.DIV,
+    #                       N=config.N)
     print(len(dataset))
-    res = dataset.__getitem__(5)
+    dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
+    # res = dataset.__getitem__(5)
+    for i, result in enumerate(dataloader):
+        if i == 2:
+            break
+        print(i)
+        print(result)
     print('data loaded')
 
 

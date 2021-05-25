@@ -48,8 +48,8 @@ def infer(args):
 
     for i, result in enumerate(dataloader_):
 
-        f1 = result['frames1'].to(device)
-        f2 = result['frames2'].to(device)
+        f1 = result['frame1'].to(device)
+        f2 = result['frame2'].to(device)
 
         flow = Flownet(f1, f2)
 
