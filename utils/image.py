@@ -27,7 +27,7 @@ def apply_mask_resize(frame, size, slice, mask):
     # apply mask
     img[mask > 0] = 0
 
-    img_big = totensor(img)
+    img_big = totensor(img).contiguous().float()
     imgs = []
     if slice > 1:
         for row in torch.chunk(img_big, slice, dim=1):

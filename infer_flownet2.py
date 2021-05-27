@@ -30,7 +30,7 @@ def parse_args():
 
 def infer(args):
 
-    device = torch.device('cuda:0')
+    device = torch.device('cuda')
 
     Flownet = FlowNet2(args, requires_grad=False)
     print('====> Loading', args.pretrained_model_flownet2)

@@ -7,7 +7,7 @@
 '''
 ############### General Settings ################
 '''
-IMG_SIZE = (800, 800)       # (1792, 1792)
+IMG_SIZE = (640, 640)       # (1792, 1792)
 DATA_ROOT = '/mnt/qinlikun/dataset/tiny_DAVIS'
 
 # corrupted area has size of (MASK_RATIO * height, MASK_RATIO * width)
