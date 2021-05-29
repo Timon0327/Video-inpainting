@@ -7,8 +7,8 @@
 '''
 ############### General Settings ################
 '''
-IMG_SIZE = (640, 640)       # (1792, 1792)
-DATA_ROOT = '/mnt/qinlikun/dataset/tiny_DAVIS'
+IMG_SIZE = (512, 512)       # (1792, 1792)
+DATA_ROOT = '/home/cap/dataset/tiny_DAVIS'
 
 # corrupted area has size of (MASK_RATIO * height, MASK_RATIO * width)
 MASK_RATIO = 0.25
@@ -23,17 +23,17 @@ DIV = 1
 N = 4
 
 # FlowNet pretrained weight
-FLOWNET_WEIGHT = '/mnt/qinlikun/inpainting/flownet/FlowNet2_checkpoint.pth.tar'
+FLOWNET_WEIGHT = '/home/cap/project/inpainting/FlowNet2_checkpoint.pth.tar'
 
 # Resnet pretrained weight
-RESNET50_WEIGHT = '/mnt/qinlikun/inpainting/resnet/resnet50-19c8e357.pth'
-RESNET101_WEIGHT = '/mnt/qinlikun/inpainting/resnet/resnet101-5d3b4d8f.pth '
+RESNET50_WEIGHT = '/home/cap/project/inpaintingresnet50-19c8e357.pth'
+RESNET101_WEIGHT = '/home/cap/project/inpainting/resnet101-5d3b4d8f.pth '
 
 '''
 ############### Training Setting ################
 '''
 
-SAVE_DIR = '/mnt/qinlikun/inpainting/ckpt'
+SAVE_DIR = '/home/cap/project/inpainting/ckpt'
 
 # maximum steps
 MAX_ITER = 100000

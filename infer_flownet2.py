@@ -51,6 +51,7 @@ def infer(args):
         f1 = result['frame1'].to(device)
         f2 = result['frame2'].to(device)
 
+        print(f1.size())
         flow = Flownet(f1, f2)
 
         output_path = result['flow_file'][0]
