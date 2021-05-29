@@ -97,7 +97,7 @@ class FlownetInfer(Dataset):
         if not os.path.exists(self.file):
             with open(self.file, 'w') as f:
                 for video in self.video_list:
-                    if os.path.exists(os.path.join(self.out_dir, video)):
+                    if not os.path.exists(os.path.join(self.out_dir, video)):
                         os.mkdir(os.path.join(self.out_dir, video))
                     # get the number of images per video
                     imgs = os.listdir(os.path.join(self.img_dir, video))
