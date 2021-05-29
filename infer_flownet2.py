@@ -33,6 +33,14 @@ def infer(args):
     device = torch.device('cuda')
 
     Flownet = FlowNet2(args, requires_grad=False)
+
+    if torch.cuda.device_count() > 1:
+        Flownet = torch.nn.DataParallel(Flownetl)
+        model = Flownet.to(device)
+        print(torch.cuda.device_count())
+    else:
+        Flownet = Flownet.to(device)
+
     print('====> Loading', args.pretrained_model_flownet2)
     flownet2_ckpt = torch.load(args.pretrained_model_flownet2)
     Flownet.load_state_dict(flownet2_ckpt['state_dict'])
