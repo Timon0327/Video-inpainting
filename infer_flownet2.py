@@ -35,7 +35,7 @@ def infer(args):
     Flownet = FlowNet2(args, requires_grad=False)
 
     if torch.cuda.device_count() > 1:
-        Flownet = torch.nn.DataParallel(Flownetl)
+        Flownet = torch.nn.DataParallel(Flownet)
         model = Flownet.to(device)
         print(torch.cuda.device_count())
     else:
