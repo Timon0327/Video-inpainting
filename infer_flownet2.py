@@ -34,17 +34,17 @@ def infer(args):
 
     Flownet = FlowNet2(args, requires_grad=False)
 
+    print('====> Loading', args.pretrained_model_flownet2)
+    flownet2_ckpt = torch.load(args.pretrained_model_flownet2)
+    Flownet.load_state_dict(flownet2_ckpt['state_dict'])
+
     if torch.cuda.device_count() > 1:
         Flownet = torch.nn.DataParallel(Flownet)
-        model = Flownet.to(device)
+        Flownet = Flownet.to(device)
         print(torch.cuda.device_count())
     else:
         Flownet = Flownet.to(device)
 
-    print('====> Loading', args.pretrained_model_flownet2)
-    flownet2_ckpt = torch.load(args.pretrained_model_flownet2)
-    Flownet.load_state_dict(flownet2_ckpt['state_dict'])
-    Flownet.to(device)
     Flownet.eval()
 
     dataset_ = FlownetInfer(data_root=config.DATA_ROOT,
