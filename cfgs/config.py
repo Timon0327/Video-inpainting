@@ -17,7 +17,7 @@ MASK_RATIO = 0.25
 SLICE = 2
 
 # how many batch are needed to process one frame (to save CUDA memory)
-DIV = 1
+# DIV = 1
 
 # how many frames, before and after separately, are used to build temporal GCN
 N = 4

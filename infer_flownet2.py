@@ -8,7 +8,7 @@ from mmcv import ProgressBar
 
 from models import FlowNet2
 from dataset.davis import FlownetInfer
-from cfgs import config
+from cfgs import config_local as config
 
 
 def parse_args():
@@ -57,7 +57,7 @@ def infer(args):
     for i, result in enumerate(dataloader_):
 
         f1 = result['frame1'].to(device)
-        f2 = result['frame2'].to(device)
+        f2 = result['frame2'].to(device)      # [N, C ,H, W]
 
         print(f1.size())
         flow = Flownet(f1, f2)

@@ -118,16 +118,17 @@ class FlowNet2(nn.Module):
         ### normaize input
         sz = img1.size()
         img1 = img1.view(sz[0], sz[1], 1, sz[2], sz[3] )
-        img2 = img2.view(sz[0], sz[1], 1, sz[2], sz[3] )
+        img2 = img2.view(sz[0], sz[1], 1, sz[2], sz[3] )        # [N, C, 1, H, W]  C=3 here
 
-        inputs = torch.cat((img1, img2), dim=2)
+        inputs = torch.cat((img1, img2), dim=2)     # [N, C, 2, H, W]
 
+        # rgb_mean size [N, C, 1, 1, 1]
         rgb_mean = inputs.contiguous().view(inputs.size()[:2]+(-1,)).mean(dim=-1).view(inputs.size()[:2] + (1,1,1,))
         
         x = (inputs - rgb_mean) / self.rgb_max
-        x1 = x[:,:,0,:,:]
-        x2 = x[:,:,1,:,:]
-        x = torch.cat((x1,x2), dim = 1)
+        x1 = x[:,:,0,:,:]       # [N, C, H, W]
+        x2 = x[:,:,1,:,:]       # [N, C, H, W]
+        x = torch.cat((x1,x2), dim = 1)     # [N, 2C, H, W]
 
         # flownetc
         flownetc_flow2 = self.flownetc(x)[0]

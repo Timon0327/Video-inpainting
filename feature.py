@@ -32,7 +32,6 @@ def extract_features(backbone, dataset='davis', batch_size=1):
                                   mask_dir=None,
                                   out_dir=None,
                                   slice=config.SLICE,
-                                  div=config.DIV,
                                   N=config.N
                                   )
         dataloader = DataLoader(feature_dataset, batch_size=batch_size)
@@ -61,23 +60,26 @@ def extract_features(backbone, dataset='davis', batch_size=1):
     results = []
 
     for batch, sample in enumerate(dataloader):
-        if batch == 0:
-            print(sample['frames'][0].size())
-            # print(sample['video'][0])
 
         for img in sample['frames']:
             # read in frames in a mini batch
             img = img.to(device)
             img = torch.squeeze(img)
-            results.append(model(img))
+            res = model(img)
+            results.append(res)
             print(batch)
+
+        if batch == 0:
+            print('input ', sample['frames'][0].size())
+            # print(sample['video'][0])
+            print('output:', res.size())
 
         # save features
         output_file = sample['out_file'][0]
         print('output at ', output_file)
         with open(output_file, 'wb') as f:
             pickle.dump(results, f)            # each pk file stores a list of tensor, which has size of [N, 2048]
-        results = []                           # N = slice * slice / div
+        results = []                           # N = slice * slice * 2N
 
 
 if __name__ == '__main__':
