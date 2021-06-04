@@ -132,6 +132,8 @@ def train(args):
                 print('result device: ', res_flow.device)
 
             loss = loss_fn(res_flow, gt)
+            if step == 1:
+                print(loss.device)
 
             optimizer.zero_grad()
             loss.backward()
