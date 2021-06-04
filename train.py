@@ -33,7 +33,7 @@ def parse_args():
     parser.add_argument('--LR', type=float, default=config.LR)
 
     parser.add_argument('--save_dir', type=str, default=config.SAVE_DIR)
-    parser.add_argument('--local_rank', action='store_true'
+    parser.add_argument('--local_rank', action='store_true')
 
     parser.add_argument('--max_iter', type=int, default=config.MAX_ITER)
     parser.add_argument('--EPOCH', type=int, default=config.EPOCH)
