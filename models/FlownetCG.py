@@ -10,8 +10,8 @@ sys.path.append('..')
 from models.FlowNet2_Models.submodules import *
 from models.FlowNet2_Models.correlation_package.correlation import Correlation
 from models.GCN_model import GCN
-# import cfgs.config_local as config
-from cfgs import config
+import cfgs.config_local as config
+# from cfgs import config
 import torch.nn.init as init
 import torch
 import torch.nn as nn

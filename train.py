@@ -28,7 +28,7 @@ def parse_args():
     parser.add_argument('--img_size', type=list, default=config.IMG_SIZE)
     parser.add_argument('--rgb_max', type=float, default=255.)
 
-    parser.add_argument('--batch_size', type=int, default=1)
+    parser.add_argument('--batch_size', type=int, default=config.BATCH_SIZE)
     parser.add_argument('--LR', type=float, default=config.LR)
 
     parser.add_argument('--save_dir', type=str, default=config.SAVE_DIR)

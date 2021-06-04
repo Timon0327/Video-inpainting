@@ -38,7 +38,7 @@ SAVE_DIR = '/home/cap/project/inpainting/ckpt'
 # maximum steps
 MAX_ITER = 100000
 
-BATCH_SIZE = 2
+BATCH_SIZE = 8
 
 # number of workers for dataloader
 N_THREADS = 8
