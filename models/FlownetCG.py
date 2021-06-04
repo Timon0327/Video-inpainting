@@ -45,8 +45,9 @@ class FlownetCG(nn.Module):
         self.conv3 = conv(self.batchNorm, 128, 256, kernel_size=5, stride=2)
         self.conv_redir = conv(self.batchNorm, 256, 32, kernel_size=1, stride=1)
 
-        self.corr = Correlation(pad_size=20, kernel_size=1, max_displacement=20, stride1=1, stride2=2,
-                                    corr_multiply=1)
+        self.corr = Correlation(pad_size=config.CORR_PAD_SIZE, kernel_size=config.CORR_KERNEL_SIZE,
+                                max_displacement=config.CORR_MAX_DISPLACEMENT, stride1=config.CORR_STRIDE1,
+                                stride2=config.CORR_STRIDE2, corr_multiply=config.CORR_MULTIPLY)
         self.corr_activation = nn.LeakyReLU(0.1, inplace=True)
 
         self.conv3_1 = conv(self.batchNorm, 473, 256)

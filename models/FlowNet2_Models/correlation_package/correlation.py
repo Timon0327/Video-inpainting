@@ -2,6 +2,10 @@ import torch
 from torch.nn.modules.module import Module
 from torch.autograd import Function
 import correlation_cuda
+import sys
+sys.path.append('../../..')
+
+from cfgs import config
 
 
 class CorrelationFunction(Function):
@@ -17,25 +21,24 @@ class CorrelationFunction(Function):
         # self.out_channel = ((max_displacement/stride2)*2 + 1) * ((max_displacement/stride2)*2 + 1)
 
     @staticmethod
-    def forward(ctx, input1, input2, pad_size, kernel_size, max_displacement,
-                stride1, stride2, corr_multiply):
+    def forward(ctx, input1, input2):
 
-        ctx.save_for_backward(input1, input2, pad_size, kernel_size, max_displacement,
-                stride1, stride2, corr_multiply)
+        ctx.save_for_backward(input1, input2)
 
         with torch.cuda.device_of(input1):
             rbot1 = input1.new()
             rbot2 = input2.new()
             output = input1.new()
 
-            correlation_cuda.forward(input1, input2, rbot1, rbot2, output, 
-                pad_size, kernel_size, max_displacement, stride1, stride2, corr_multiply)
+            correlation_cuda.forward(input1, input2, rbot1, rbot2, output, config.CORR_PAD_SIZE,
+                                     config.CORR_KERNEL_SIZE, config.CORR_MAX_DISPLACEMENT,
+                                     config.CORR_STRIDE1, config.CORR_STRIDE2, config.CORR_MULTIPLY)
 
         return output
 
     @staticmethod
     def backward(ctx, grad_output):
-        input1, input2, pad_size, kernel_size, max_displacement,stride1, stride2, corr_multiply = ctx.saved_tensors
+        input1, input2 = ctx.saved_tensors
 
         with torch.cuda.device_of(input1):
             rbot1 = input1.new()
@@ -45,7 +48,9 @@ class CorrelationFunction(Function):
             grad_input2 = input2.new()
 
             correlation_cuda.backward(input1, input2, rbot1, rbot2, grad_output, grad_input1, grad_input2,
-                pad_size, kernel_size, max_displacement,stride1, stride2, corr_multiply)
+                                      config.CORR_PAD_SIZE,
+                                      config.CORR_KERNEL_SIZE, config.CORR_MAX_DISPLACEMENT,
+                                      config.CORR_STRIDE1, config.CORR_STRIDE2, config.CORR_MULTIPLY)
 
         return grad_input1, grad_input2
 
@@ -62,7 +67,7 @@ class Correlation(Module):
 
     def forward(self, input1, input2):
 
-        result = CorrelationFunction.apply(input1, input2, self.pad_size, self.kernel_size, self.max_displacement,self.stride1, self.stride2, self.corr_multiply)
+        result = CorrelationFunction.apply(input1, input2)
 
         return result
 

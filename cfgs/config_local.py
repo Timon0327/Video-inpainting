@@ -52,4 +52,13 @@ LAMBDA_SMOOTH = 0.1
 LAMBDA_HARD = 2.
 
 
-
+'''
+############### Network Setting ################
+'''
+# correlation layer
+CORR_PAD_SIZE = 20
+CORR_KERNEL_SIZE = 1
+CORR_MAX_DISPLACEMENT = 20
+CORR_STRIDE1 = 1
+CORR_STRIDE2 = 2
+CORR_MULTIPLY = 1
