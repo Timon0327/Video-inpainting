@@ -147,7 +147,7 @@ class GCN(nn.Module):
         print(out.size())
 
         out_conv1 = self.conv1x1(out)     # [N * 2048, 1, slice, slice]
-        print(out.size())
+        print('out_conv1:', out_conv1.size())
         out = torch.squeeze(out_conv1)    # [N * 2048, slice, slice]
         print('GCN batch ', self.batch)
 
