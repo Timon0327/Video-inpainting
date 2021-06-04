@@ -8,18 +8,6 @@ from numpy import linalg as LA
 from cfgs import config
 
 
-# def square_normalize(input):
-#     '''
-#     A = e(xi,xj)^2/sum(e(xi,xj)^2)
-#     calculate normalized squared matrix
-#     :param input: matrix, tensor, [N, nodes, nodes]
-#     :return:
-#     '''
-#     square = input * input      # [N, nodes, nodes]
-#     sum = torch.sum(square, dim=1, keepdim=True)    # [N, 1, nodes]
-#     return square / sum     # [N, nodes, nodes]
-
-
 def inverse_square_root(mat):
     '''
     calculate the 1/2 power of the inverse of the matrix
@@ -35,6 +23,18 @@ def inverse_square_root(mat):
     new_values = 1 / values ** 0.5
     result = np.dot(np.dot(vecs, np.diag(new_values)), LA.inv(vecs))
     return result
+
+
+# def square_normalize(input):
+#     '''
+#     A = e(xi,xj)^2/sum(e(xi,xj)^2)
+#     calculate normalized squared matrix
+#     :param input: matrix, tensor, [N, nodes, nodes]
+#     :return:
+#     '''
+#     square = input * input  # [N, nodes, nodes]
+#     sum = torch.sum(square, dim=1, keepdim=True)  # [N, 1, nodes]
+#     return square / sum  # [N, nodes, nodes]
 
 
 class GCN_3(nn.Module):
@@ -110,7 +110,11 @@ class GCN_3(nn.Module):
 
         # adjacent matrix
         out = torch.matmul(out, torch.transpose(out, dim0=1, dim1=2))       # [N, nodes, nodes]
-        adj = self.square_normalize(out)  # adj: [N, nodes, nodes]
+
+        square = out * out  # [N, nodes, nodes]
+        sum_sq = torch.sum(square, dim=1, keepdim=True)  # [N, 1, nodes]
+        adj = square / sum_sq  # [N, nodes, nodes]
+        # adj = square_normalize(out)  # adj: [N, nodes, nodes]
 
         # self-loop adjacency matrix
         I = torch.from_numpy(np.identity(self.node_num)).to('cuda')    # [nodes, nodes]
@@ -125,17 +129,6 @@ class GCN_3(nn.Module):
         tmp = torch.matmul(torch.matmul(D_sqt, self_adj), D_sqt).float()     # [N, nodes, nodes]
         self.laplacian_adj = tmp
         return tmp
-
-    def square_normalize(self, input):
-        '''
-        A = e(xi,xj)^2/sum(e(xi,xj)^2)
-        calculate normalized squared matrix
-        :param input: matrix, tensor, [N, nodes, nodes]
-        :return:
-        '''
-        square = input * input  # [N, nodes, nodes]
-        sum = torch.sum(square, dim=1, keepdim=True)  # [N, 1, nodes]
-        return square / sum  # [N, nodes, nodes]
 
     def forward(self, input):
         '''
