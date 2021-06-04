@@ -15,7 +15,7 @@ from torch.nn.parallel import DistributedDataParallel
 from dataset.davis import FlownetCGData
 from models.FlownetCG import FlownetCG, change_state_dict
 from cfgs import config
-from utils.losses import L1
+from utils.losses import L1Loss
 
 
 def parse_args():
@@ -91,7 +91,7 @@ def train(args):
     print("1 valid epoch has ", len(valid_dataset) // args.batch_size, ' iterations')
 
     # loss and optimizer
-    loss_fn = L1().to(device)
+    l1loss = L1Loss().to(device)
     optimizer = torch.optim.SGD(flownetcg.parameters(), lr=args.LR,
                                 momentum=0.9, weight_decay=args.WEIGHT_DECAY)
 
@@ -141,20 +141,22 @@ def train(args):
                 print('result size: ', res_flow.size())
                 print('result device: ', res_flow.device)
 
-            loss = loss_fn(res_flow, gt)
+            loss = l1loss(res_flow, gt)
             if step == 1:
                 print(loss.device)
 
             optimizer.zero_grad()
-            loss.backward()
+            loss[0].backward()
             optimizer.step()
 
             if step % args.PRINT_EVERY == 0:
                 print('step: ', step)
                 print('epoch: ', epoch)
-                print(f"loss: {loss.item():>7f}")
+                print(f"loss: {loss[0].item():>7f}")
+                print(f"epe: {loss[1].item():>7f}")
                 print('--------------------------------------')
-                writer.add_scalar('loss', loss.item(), global_step=step)
+                writer.add_scalar('loss', loss[0].item(), global_step=step)
+                writer.add_scalar('epe', loss[1].item(), global_step=step)
 
             if step in args.DECAY_STEPS:
                 optimizer['lr'] *= 0.1
@@ -167,7 +169,7 @@ def train(args):
                     'step': step,
                     'flownetcg': flownetcg.state_dict(),
                     'optimizer': optimizer.state_dict(),
-                    'loss': loss.item()
+                    'loss': loss[0].item()
                 }, path)
                 print('model has been saved in ', path)
 
@@ -183,10 +185,10 @@ def train(args):
                 gt = valid_data['gt'].to(device)
                 res_flow = flownetcg(frames, feature)
 
-                test_losses.append(loss_fn(res_flow, gt).item())
-        test_loss = np.sum(test_losses) / valid_len
-        print('average loss for validation is ', test_loss)
-        writer.add_scalar('valid loss', test_loss, global_step=step)
+                test_losses.append(l1loss(res_flow, gt)[1].item())
+        test_epe = np.sum(test_losses) / valid_len
+        print('epe for validation is ', test_epe)
+        writer.add_scalar('valid epe', test_epe, global_step=step)
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 
     writer.close()
