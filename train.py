@@ -110,11 +110,12 @@ def train(args):
         print('start from the bery begining')
 
     if torch.cuda.device_count() > 1:
-        # flownetcg= torch.nn.DataParallel(flownetcg)
-        # flownetcg = flownetcg.to(device)
-        torch.distributed.init_process_group(backend="nccl",init_method='tcp://localhost:23456', rank=0, world_size=1)
+        flownetcg= torch.nn.DataParallel(flownetcg)
         flownetcg = flownetcg.to(device)
-        flownetcg = DistributedDataParallel(flownetcg)
+        # torch.distributed.init_process_group(backend="nccl",init_method='tcp://localhost:23456', rank=0, world_size=1)
+        # flownetcg = flownetcg.to(device)
+        flownetcg.set_gcn_device()
+        # flownetcg = DistributedDataParallel(flownetcg)
         print('using ', torch.cuda.device_count(), ' cuda device(s)')
 
     # train

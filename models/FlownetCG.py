@@ -183,8 +183,10 @@ class FlownetCG(nn.Module):
                 m.eval()
                 for item in m.parameters(recurse=False):
                     item.requires_grad_(False)
-
         print('all!')
+
+    def set_gcn_device(self):
+        self.gcn.to(self.device)
 
 
 def change_state_dict(state_dict):
