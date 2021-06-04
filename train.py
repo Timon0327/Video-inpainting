@@ -110,8 +110,8 @@ def train(args):
         print('start from the bery begining')
 
     if torch.cuda.device_count() > 1:
-        flownetcg= torch.nn.DataParallel(flownetcg)
-        flownetcg = flownetcg.to(device)
+        flownetcg = torch.nn.DataParallel(flownetcg)
+        flownetcg = flownetcg.cuda()
         # torch.distributed.init_process_group(backend="nccl",init_method='tcp://localhost:23456', rank=0, world_size=1)
         # flownetcg = flownetcg.to(device)
         # flownetcg.module.update_gcn_device(flownetcg.module.device)
@@ -136,7 +136,6 @@ def train(args):
                 print('gt device: ', gt.device)
                 print('result size: ', res_flow.size())
                 print('result device: ', res_flow.device)
-                print('flownetcg device:', flownetcg.device)
 
             loss = loss_fn(res_flow, gt)
             if step == 1:
