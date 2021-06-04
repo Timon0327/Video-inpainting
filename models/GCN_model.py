@@ -69,7 +69,7 @@ class GCN(nn.Module):
                 nn.Linear(in_features=2048, out_features=2048, bias=False),  # [N, nodes, 2048]
                 nn.LayerNorm(normalized_shape=2048),  # [N, nodes, 2048]
                 nn.LeakyReLU(negative_slope=0.1)  # [N, nodes, 2048]
-            ).cuda()
+            )
             self.blocks.append(one)
 
         self.conv1x1 = nn.Conv2d(in_channels=2 * self.frames, out_channels=1, kernel_size=1, stride=1)
