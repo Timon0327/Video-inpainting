@@ -202,6 +202,7 @@ class FlownetCGData(Dataset):
                 |-- gt (possibly)
         modes:
             train -- for training, get 2 frames, features, masks of 2 frames, and gt forward flow
+            valid -- for validation, get 2 frames, features, masks of 2 frames, and gt forward flow
             test -- for testing, get 2 frames, features, and output filename
         :param data_root: the directory of dataroot
         :param mode: str, 'train' or 'test'
@@ -238,14 +239,21 @@ class FlownetCGData(Dataset):
         else:
             self.gt_dir = feature_dir
 
-        # record video names
-        self.video_list = os.listdir(self.img_dir)
-        self.video_list.sort()
-
+        # load video names
         if mode == 'train':
+            self.video_file = os.path.join(data_root, 'ImageSets', '2017', 'train.txt')
             self.file = os.path.join(data_root, 'ImageSets', '2017', 'train_gflownet.txt')
+        elif mode == 'val':
+            self.video_file = os.path.join(data_root, 'ImageSets', '2017', 'val.txt')
+            self.file = os.path.join(data_root, 'ImageSets', '2017', 'valid_gflownet.txt')
         else:
+            self.video_file = os.path.join(data_root, 'ImageSets', '2017', 'test.txt')
             self.file = os.path.join(data_root, 'ImageSets', '2017', 'test_gflownet.txt')
+
+        with open(self.video_file, 'r') as f:
+            tmp = f.readlines()
+            self.video_list = [x[:-1] for x in tmp]
+            # self.video_list.sort()
 
         if not os.path.exists(self.file):
             with open(self.file, 'w') as f:
@@ -333,7 +341,7 @@ class FlownetCGData(Dataset):
             feature = torch.cat(feature, dim=0)
             # feature.requires_grad_(False)
 
-        if self.mode == 'train':
+        if self.mode != 'test':
             gt = cvb.read_flow(os.path.join(self.gt_dir, self.gt_list[idx]))
             gt = torch.from_numpy(gt[:, :, :])
             gt.requires_grad_(False)

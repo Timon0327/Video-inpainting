@@ -7,6 +7,7 @@
 from FlowNet2_Models.submodules import *
 from FlowNet2_Models.correlation_package.correlation import Correlation
 from GCN_model import GCN
+# import cfgs.config_local as config
 from cfgs import config
 import torch.nn.init as init
 import torch
@@ -163,7 +164,23 @@ class FlownetCG(nn.Module):
         if self.training:
             return flow1_up, flow1, flow2, flow3, flow4, flow5, flow6, out_conv3_1, out_conv4, out_conv5, out_conv6
         else:
-            return flow1_up,
+            return flow1_up
+
+    def fix_front(self):
+        '''
+        fix the weights of the upper part of the net
+        @return:
+        '''
+        module_list = []
+        for i, m in enumerate(self.modules()):
+            # print(m)
+            module_list.append(m)
+            if i in range(7, 42):
+                m.eval()
+                for item in m.parameters(recurse=False):
+                    item.requires_grad_(False)
+
+        print('all!')
 
 
 def change_state_dict(state_dict):
@@ -191,15 +208,16 @@ if __name__ == '__main__':
     checkpoint = torch.load(ckpt)
     truncated = change_state_dict(checkpoint)
     flownetcg = FlownetCG()
-    print(flownetcg)
+    # print(flownetcg)
     flownetcg.load_state_dict(truncated, strict=False)
+    flownetcg.fix_front()
     flownetcg.to('cuda')
     print('model loaded')
     # for param in flownetcg.parameters():
     #    print(param)
 
     dataset = FlownetCGData(data_root=config.DATA_ROOT, mode='train')
-    dataloader = DataLoader(dataset, batch_size=1)
+    dataloader = DataLoader(dataset, batch_size=config.BATCH_SIZE)
 
     for batch, data in enumerate(dataloader):
         frames = data['frames'].cuda()

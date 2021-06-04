@@ -33,10 +33,13 @@ RESNET101_WEIGHT = '/mnt/qinlikun/inpainting/resnet/resnet101-5d3b4d8f.pth '
 ############### Training Setting ################
 '''
 
-SAVE_DIR = '/mnt/qinlikun/inpainting/ckpt'
+SAVE_DIR = '/mnt/qinlikun/inpainting'
 
 # maximum steps
 MAX_ITER = 100000
+DECAY_STEPS = [80000, 90000]
+
+EPOCH= 100
 
 BATCH_SIZE = 1
 
