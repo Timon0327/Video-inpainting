@@ -25,7 +25,7 @@ class FlownetCG(nn.Module):
     '''
     incorporate FlowNet with GCN, addding features of nearby frames
     '''
-    def __init__(self, batchnorm=False):
+    def __init__(self, batchnorm=False, batch_size=config.BATCH_SIZE):
         '''
 
         batchnorm: True or False, to add Batch Normalization or not
@@ -35,7 +35,7 @@ class FlownetCG(nn.Module):
         super().__init__()
 
         print('initiating GCN')
-        self.gcn = GCN(layers=3, frames=config.N, slice=config.SLICE, batch=config.BATCH_SIZE)
+        self.gcn = GCN(layers=3, frames=config.N, slice=config.SLICE, batch=batch_size)
         self.gcn = self.gcn.to('cuda')
 
         self.batchNorm = batchnorm

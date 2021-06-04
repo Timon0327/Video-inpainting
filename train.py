@@ -81,7 +81,7 @@ def train(args):
     valid_len = len(valid_dataset)
     # model
 
-    flownetcg = FlownetCG()
+    flownetcg = FlownetCG(batch_size=args.batch_size)
     # writer.add_graph(flownetcg)
 
     # loss and optimizer
@@ -120,6 +120,10 @@ def train(args):
             frames = data['frames'].to(device)
             feature = data['feature'].to(device)
             gt = data['gt'].to(device)
+            if step == 1:
+                print('frames size ', frames.size())
+                print('feature size ', feature.size())
+                print('gt size ', gt.size())
             res_flow = flownetcg(frames, feature)
 
             loss = loss_fn(res_flow, gt)
