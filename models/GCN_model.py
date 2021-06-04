@@ -134,6 +134,7 @@ class GCN(nn.Module):
         :return:
         '''
         # update adjacency matrix
+        print('input to gcn is', input.size())
         self.adjacency_laplacian(input)
 
         out = input     # [N, nodes, 2048]
@@ -147,9 +148,7 @@ class GCN(nn.Module):
         print(out.size())
 
         out_conv1 = self.conv1x1(out)     # [N * 2048, 1, slice, slice]
-        print('out_conv1:', out_conv1.size())
         out = torch.squeeze(out_conv1)    # [N * 2048, slice, slice]
-        print('GCN batch ', self.batch)
 
         out = out.view(self.batch, 2048, self.slice, self.slice)
 
