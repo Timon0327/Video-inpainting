@@ -171,7 +171,9 @@ def train(args):
     writer.close()
 
 
-
+if __name__ == '__main__':
+    args = parse_args()
+    train(args)
 
 
 
