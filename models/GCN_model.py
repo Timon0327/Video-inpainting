@@ -37,40 +37,48 @@ def inverse_square_root(mat):
     return result
 
 
-class GCN(nn.Module):
+class GCN_3(nn.Module):
     '''
 
     base class for STGCN
 
     '''
-    def __init__(self, layers, frames, slice, batch):
+    def __init__(self, frames, slice, batch):
         '''
-
+        layer 3
         node_num: number of nodes, int (usually 2N * SLICE * SLICE)
         :param frames: get 2 * 'frames' frames in total. int
         :param slice: how many patches each frame is divided into in each direction, int
-        :param layers: number of layers, int
         :param batch: batch size divided by gpu number, int
         '''
-        super(GCN, self).__init__()
+        super(GCN_3, self).__init__()
         self.node_num = 2 * frames * slice * slice
         self.frames = frames
         self.batch = batch
         self.slice = slice
-        self.layers = layers
 
         # fully-connected layer in building adjacency matrix
         self.fc1 = nn.Linear(in_features=2048, out_features=2048, bias=False)
 
         # layers in the back
-        self.blocks = []
-        for k in range(layers):
-            one = nn.Sequential(
-                nn.Linear(in_features=2048, out_features=2048, bias=False),  # [N, nodes, 2048]
-                nn.LayerNorm(normalized_shape=2048),  # [N, nodes, 2048]
-                nn.LeakyReLU(negative_slope=0.1)  # [N, nodes, 2048]
-            )
-            self.blocks.append(one)
+
+        self.layer1 = nn.Sequential(
+            nn.Linear(in_features=2048, out_features=2048, bias=False),  # [N, nodes, 2048]
+            nn.LayerNorm(normalized_shape=2048),  # [N, nodes, 2048]
+            nn.LeakyReLU(negative_slope=0.1)  # [N, nodes, 2048]
+        )
+
+        self.layer2 = nn.Sequential(
+            nn.Linear(in_features=2048, out_features=2048, bias=False),  # [N, nodes, 2048]
+            nn.LayerNorm(normalized_shape=2048),  # [N, nodes, 2048]
+            nn.LeakyReLU(negative_slope=0.1)  # [N, nodes, 2048]
+        )
+
+        self.layer3 = nn.Sequential(
+            nn.Linear(in_features=2048, out_features=2048, bias=False),  # [N, nodes, 2048]
+            nn.LayerNorm(normalized_shape=2048),  # [N, nodes, 2048]
+            nn.LeakyReLU(negative_slope=0.1)  # [N, nodes, 2048]
+        )
 
         self.conv1x1 = nn.Conv2d(in_channels=2 * self.frames, out_channels=1, kernel_size=1, stride=1)
         # for the case where slice is 2 and height of img is 640
@@ -138,10 +146,15 @@ class GCN(nn.Module):
         self.adjacency_laplacian(input)
 
         out = input     # [N, nodes, 2048]
-        for j in range(self.layers):
-            out = torch.matmul(self.laplacian_adj, out)  # [N, nodes, 2048]
-            self.blocks[j].to('cuda')
-            out = self.blocks[j](out)  # [N, nodes, 2048]
+
+        out = torch.matmul(self.laplacian_adj, out)  # [N, nodes, 2048]
+        out = self.layer1(out)  # [N, nodes, 2048]
+
+        out = torch.matmul(self.laplacian_adj, out)  # [N, nodes, 2048]
+        out = self.layer2(out)  # [N, nodes, 2048]
+
+        out = torch.matmul(self.laplacian_adj, out)  # [N, nodes, 2048]
+        out = self.layer3(out)  # [N, nodes, 2048]
 
         out = torch.transpose(out, dim0=1, dim1=2)  # [N, 2048, nodes]
         # batch = out.size()[0]
@@ -230,10 +243,9 @@ model_sptial = GCN_spatial(adj_s, feature_dim, out_dim)
 '''
 
 if __name__ == '__main__':
-    a = GCN(layers=3,
-            frames=config.N,
-            slice=config.SLICE,
-            batch=1)
+    a = GCN_3(frames=config.N,
+              slice=config.SLICE,
+              batch=1)
     print('GCN created')
 
 

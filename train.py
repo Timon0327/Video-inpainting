@@ -111,7 +111,8 @@ def train(args):
 
     if torch.cuda.device_count() > 1:
         flownetcg = torch.nn.DataParallel(flownetcg)
-        flownetcg = flownetcg.cuda()
+        flownetcg = flownetcg.to(device)
+        flownetcg.module.gcn.to(device)
         # torch.distributed.init_process_group(backend="nccl",init_method='tcp://localhost:23456', rank=0, world_size=1)
         # flownetcg = flownetcg.to(device)
         # flownetcg.module.update_gcn_device(flownetcg.module.device)

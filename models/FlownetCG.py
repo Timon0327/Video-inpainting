@@ -9,7 +9,7 @@ sys.path.append('..')
 
 from models.FlowNet2_Models.submodules import *
 from models.FlowNet2_Models.correlation_package.correlation import Correlation
-from models.GCN_model import GCN
+from models.GCN_model import GCN_3
 # import cfgs.config_local as config
 from cfgs import config
 import torch.nn.init as init
@@ -36,7 +36,7 @@ class FlownetCG(nn.Module):
         super().__init__()
 
         print('initiating GCN')
-        self.gcn = GCN(layers=3, frames=config.N, slice=config.SLICE, batch=batch_size)
+        self.gcn = GCN_3(frames=config.N, slice=config.SLICE, batch=batch_size)
         self.gcn = self.gcn.to('cuda')
 
         self.batchNorm = batchnorm
@@ -219,6 +219,8 @@ if __name__ == '__main__':
     flownetcg.fix_front()
     flownetcg.to('cuda')
     print('model loaded')
+    for child in flownetcg.children():
+        print(child)
     # for param in flownetcg.parameters():
     #    print(param)
 

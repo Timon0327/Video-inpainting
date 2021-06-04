@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 
 import utils.loss as L
 from models import resnet_models
-from models.GCN_model import GCN
+from models.GCN_model import GCN_3
 from utils.io import save_ckpt, load_ckpt
 from utils.runner_func import *
 from cfgs import config
@@ -94,8 +94,8 @@ def main():
     if not args.CPU:
         torch.cuda.manual_seed(7777777)
 
-    gcn_temporal = GCN(node_num=config.SLICE * config.SLICE * config.N,
-                       layers=3)
+    gcn_temporal = GCN_3(node_num=config.SLICE * config.SLICE * config.N,
+                         layers=3)
     if torch.cuda.device_count() > 1:
         gcn_temporal = torch.nn.DataParallel(gcn_temporal)
         gcn_temporal = gcn_temporal.to(device)
