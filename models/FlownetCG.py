@@ -29,6 +29,7 @@ class FlownetCG(nn.Module):
         '''
 
         batchnorm: True or False, to add Batch Normalization or not
+        @param batch_size: batch_size divided by gpu number, int
         @type batchnorm: object
         '''
         print('initiating FlowNetCG')

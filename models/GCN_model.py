@@ -50,7 +50,7 @@ class GCN(nn.Module):
         :param frames: get 2 * 'frames' frames in total. int
         :param slice: how many patches each frame is divided into in each direction, int
         :param layers: number of layers, int
-        :param batch: batch size, int
+        :param batch: batch size divided by gpu number, int
         '''
         super(GCN, self).__init__()
         self.node_num = 2 * frames * slice * slice
@@ -134,7 +134,7 @@ class GCN(nn.Module):
         :return:
         '''
         # update adjacency matrix
-        print('input to gcn is', input.size())
+        # print('input to gcn is', input.size())
         self.adjacency_laplacian(input)
 
         out = input     # [N, nodes, 2048]
@@ -145,7 +145,7 @@ class GCN(nn.Module):
         out = torch.transpose(out, dim0=1, dim1=2)  # [N, 2048, nodes]
         # batch = out.size()[0]
         out = out.reshape(-1, 2 * self.frames, self.slice, self.slice)     # [N * 2048, 2 * frames, slice, slice]
-        print(out.size())
+        # print(out.size())
 
         out_conv1 = self.conv1x1(out)     # [N * 2048, 1, slice, slice]
         out = torch.squeeze(out_conv1)    # [N * 2048, slice, slice]
