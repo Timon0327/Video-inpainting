@@ -122,7 +122,9 @@ class GCN_3(nn.Module):
         eig_values = 1 / sums ** 0.5
         D_sqt = torch.diag_embed(eig_values)  # D_sqt is D^(-1/2), [N, nodes, nodes]
 
-        self.laplacian_adj = torch.matmul(torch.matmul(D_sqt, self_adj), D_sqt).float()     # [N, nodes, nodes]
+        tmp = torch.matmul(torch.matmul(D_sqt, self_adj), D_sqt).float()     # [N, nodes, nodes]
+        self.laplacian_adj = tmp
+        return tmp
 
     def square_normalize(self, input):
         '''
@@ -143,17 +145,17 @@ class GCN_3(nn.Module):
         '''
         # update adjacency matrix
         # print('input to gcn is', input.size())
-        self.adjacency_laplacian(input)
+        adj = self.adjacency_laplacian(input)
 
         out = input     # [N, nodes, 2048]
 
-        out = torch.matmul(self.laplacian_adj, out)  # [N, nodes, 2048]
+        out = torch.matmul(adj, out)  # [N, nodes, 2048]
         out = self.layer1(out)  # [N, nodes, 2048]
 
-        out = torch.matmul(self.laplacian_adj, out)  # [N, nodes, 2048]
+        out = torch.matmul(adj, out)  # [N, nodes, 2048]
         out = self.layer2(out)  # [N, nodes, 2048]
 
-        out = torch.matmul(self.laplacian_adj, out)  # [N, nodes, 2048]
+        out = torch.matmul(adj, out)  # [N, nodes, 2048]
         out = self.layer3(out)  # [N, nodes, 2048]
 
         out = torch.transpose(out, dim0=1, dim1=2)  # [N, 2048, nodes]
