@@ -140,7 +140,7 @@ class GCN(nn.Module):
         out = input     # [N, nodes, 2048]
         for j in range(self.layers):
             out = torch.matmul(self.laplacian_adj, out)  # [N, nodes, 2048]
-            self.blocks[j].to(out.device)
+            self.blocks[j].to('cuda')
             out = self.blocks[j](out)  # [N, nodes, 2048]
 
         out = torch.transpose(out, dim0=1, dim1=2)  # [N, 2048, nodes]
