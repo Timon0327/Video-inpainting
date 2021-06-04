@@ -82,7 +82,7 @@ def train(args):
     # model
 
     gpu_num = torch.cuda.device_count()
-    flownetcg = FlownetCG(batch_size=args.batch_size / gpu_num)
+    flownetcg = FlownetCG(batch_size=args.batch_size // gpu_num)
     # writer.add_graph(flownetcg)
 
     # loss and optimizer
