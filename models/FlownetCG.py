@@ -4,9 +4,12 @@
 #  By Likun Qin ,2021
 '''
 
-from FlowNet2_Models.submodules import *
-from FlowNet2_Models.correlation_package.correlation import Correlation
-from GCN_model import GCN
+import sys
+sys.path.append('..')
+
+from models.FlowNet2_Models.submodules import *
+from models.FlowNet2_Models.correlation_package.correlation import Correlation
+from models.GCN_model import GCN
 # import cfgs.config_local as config
 from cfgs import config
 import torch.nn.init as init
