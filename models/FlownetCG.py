@@ -95,7 +95,7 @@ class FlownetCG(nn.Module):
         '''
 
         x: concatenated input adjacent frames, tensor, [N, 2C, H, W]
-        features: features of continuous 2N frames, tensor, [nodes, 2048]
+        features: features of continuous 2N frames, tensor, [N, nodes, 2048]
 
         x has shape of [N, 2C, H, W]
         generally C = 3
