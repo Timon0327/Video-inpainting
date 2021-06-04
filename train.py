@@ -124,10 +124,12 @@ def train(args):
 
             res_flow = flownetcg(frames, feature)[0]
             if step == 1:
-                print('frames size ', frames.size())
-                print('feature size ', feature.size())
-                print('gt size ', gt.size())
-                print('result size', res_flow.size())
+                print('frames size: ', frames.size())
+                print('feature size: ', feature.size())
+                print('gt size: ', gt.size())
+                print('gt device: ', gt.device)
+                print('result size: ', res_flow.size())
+                print('result device: ', res_flow.device)
 
             loss = loss_fn(res_flow, gt)
 
