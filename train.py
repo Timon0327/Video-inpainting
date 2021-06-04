@@ -87,6 +87,8 @@ def train(args):
     flownetcg = FlownetCG(batch_size=args.batch_size // gpu_num)
     # writer.add_graph(flownetcg)
 
+    print("1 epoch has ", len(train_dataset) // args.batch_size, ' iterations')
+
     # loss and optimizer
     loss_fn = L1().to(device)
     optimizer = torch.optim.SGD(flownetcg.parameters(), lr=args.LR,
