@@ -243,7 +243,7 @@ class FlownetCGData(Dataset):
         if mode == 'train':
             self.video_file = os.path.join(data_root, 'ImageSets', '2017', 'train.txt')
             self.file = os.path.join(data_root, 'ImageSets', '2017', 'train_gflownet.txt')
-        elif mode == 'val':
+        elif mode == 'valid':
             self.video_file = os.path.join(data_root, 'ImageSets', '2017', 'val.txt')
             self.file = os.path.join(data_root, 'ImageSets', '2017', 'valid_gflownet.txt')
         else:
