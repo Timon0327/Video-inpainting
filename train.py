@@ -33,7 +33,7 @@ def parse_args():
     parser.add_argument('--LR', type=float, default=config.LR)
 
     parser.add_argument('--save_dir', type=str, default=config.SAVE_DIR)
-    parser.add_argument('--local_rank', action='store_true')
+    # parser.add_argument('--local_rank', action='store_true')
 
     parser.add_argument('--max_iter', type=int, default=config.MAX_ITER)
     parser.add_argument('--EPOCH', type=int, default=config.EPOCH)
@@ -112,7 +112,7 @@ def train(args):
     if torch.cuda.device_count() > 1:
         flownetcg = torch.nn.DataParallel(flownetcg)
         flownetcg = flownetcg.to(device)
-        flownetcg.module.gcn.to(device)
+        # flownetcg.module.gcn.to(device)
         # torch.distributed.init_process_group(backend="nccl",init_method='tcp://localhost:23456', rank=0, world_size=1)
         # flownetcg = flownetcg.to(device)
         # flownetcg.module.update_gcn_device(flownetcg.module.device)
