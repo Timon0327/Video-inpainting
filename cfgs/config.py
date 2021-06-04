@@ -41,7 +41,7 @@ DECAY_STEPS = [80000, 90000]
 
 EPOCH= 100
 
-BATCH_SIZE = 1
+BATCH_SIZE = 8
 
 # number of workers for dataloader
 N_THREADS = 8
