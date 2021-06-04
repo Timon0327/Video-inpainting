@@ -1,28 +1,26 @@
 import torch
 import torch.nn as nn
 from torch.nn import init
-# import build_graph
-# import scipy.sparse as sp
 import numpy as np
-from numpy import linalg as LA
+# from numpy import linalg as LA
 from cfgs import config
 
 
-def inverse_square_root(mat):
-    '''
-    calculate the 1/2 power of the inverse of the matrix
-    :param mat: input matrix, ndarray, [N, N]
-    :return: mat ^ -1/2, ndarray, [N, N]
-    '''
-
-    # check if it is square matrix
-    assert mat.shape[0] == mat.shape[1]
-
-    values, vecs = LA.eig(mat)
-
-    new_values = 1 / values ** 0.5
-    result = np.dot(np.dot(vecs, np.diag(new_values)), LA.inv(vecs))
-    return result
+# def inverse_square_root(mat):
+#     '''
+#     calculate the 1/2 power of the inverse of the matrix
+#     :param mat: input matrix, ndarray, [N, N]
+#     :return: mat ^ -1/2, ndarray, [N, N]
+#     '''
+#
+#     # check if it is square matrix
+#     assert mat.shape[0] == mat.shape[1]
+#
+#     values, vecs = LA.eig(mat)
+#
+#     new_values = 1 / values ** 0.5
+#     result = np.dot(np.dot(vecs, np.diag(new_values)), LA.inv(vecs))
+#     return result
 
 
 # def square_normalize(input):

@@ -16,7 +16,6 @@ import torch.nn.init as init
 import torch
 import torch.nn as nn
 import argparse
-from torch.utils.data.dataset import Dataset
 from torch.utils.data import DataLoader
 from dataset.davis import FlownetCGData
 
@@ -183,7 +182,7 @@ class FlownetCG(nn.Module):
                 m.eval()
                 for item in m.parameters(recurse=False):
                     item.requires_grad_(False)
-        print('all!')
+        # print('all!')
 
     def update_gcn_device(self, device):
         self.gcn.to(device)
@@ -219,8 +218,8 @@ if __name__ == '__main__':
     flownetcg.fix_front()
     flownetcg.to('cuda')
     print('model loaded')
-    for child in flownetcg.children():
-        print(child)
+    # for child in flownetcg.children():
+    #     print(child)
     # for param in flownetcg.parameters():
     #    print(param)
 
@@ -228,6 +227,7 @@ if __name__ == '__main__':
     dataloader = DataLoader(dataset, batch_size=config.BATCH_SIZE)
 
     for batch, data in enumerate(dataloader):
+        print(batch)
         frames = data['frames'].cuda()
         feature = data['feature'].cuda()
         res_flow = flownetcg(frames, feature)
