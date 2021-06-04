@@ -10,6 +10,7 @@ import yaml
 import numpy as np
 from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
+from torch.nn.parallel import DistributedDataParallel
 
 from dataset.davis import FlownetCGData
 from models.FlownetCG import FlownetCG, change_state_dict
@@ -79,8 +80,8 @@ def train(args):
     valid_dataset = FlownetCGData(data_root=config.DATA_ROOT, mode='valid')
     valid_dataloader = DataLoader(valid_dataset, batch_size=args.batch_size, shuffle=True)
     valid_len = len(valid_dataset)
-    # model
 
+    # model
     gpu_num = torch.cuda.device_count()
     flownetcg = FlownetCG(batch_size=args.batch_size // gpu_num)
     # writer.add_graph(flownetcg)
@@ -108,8 +109,11 @@ def train(args):
         print('start from the bery begining')
 
     if torch.cuda.device_count() > 1:
-        flownetcg= torch.nn.DataParallel(flownetcg)
+        # flownetcg= torch.nn.DataParallel(flownetcg)
+        # flownetcg = flownetcg.to(device)
+        torch.distributed.init_process_group(backend="nccl")
         flownetcg = flownetcg.to(device)
+        flownetcg = DistributedDataParallel(flownetcg)
         print('using ', torch.cuda.device_count(), ' cuda device(s)')
 
     # train
