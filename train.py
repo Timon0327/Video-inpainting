@@ -82,7 +82,7 @@ def train(args):
     # model
 
     flownetcg = FlownetCG()
-    writer.add_graph(flownetcg)
+    # writer.add_graph(flownetcg)
 
     # loss and optimizer
     loss_fn = L1().to(device)
