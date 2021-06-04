@@ -185,7 +185,7 @@ class FlownetCG(nn.Module):
                     item.requires_grad_(False)
         print('all!')
 
-    def set_gcn_device(self):
+    def update_gcn_device(self):
         self.gcn.to(self.device)
 
 
