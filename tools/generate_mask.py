@@ -8,12 +8,12 @@ import os
 from utils.image import rand_bbox_mask
 from cfgs import config
 
-data_dir = '/home/cap/dataset/tiny_DAVIS/JPEGImages/480p'
+data_dir = '/mnt/qinlikun/dataset/DAVIS/DAVIS-semisupervised/DAVIS-trainval/JPEGImages/480p'
 # .../DAVIS*/JPEGImages/Full-Resolution or .../DAVIS*/JPEGImages/480p
 
-save_dir = '/home/cap/dataset/tiny_DAVIS/masks'
+save_dir = '/mnt/qinlikun/dataset/DAVIS/DAVIS-semisupervised/DAVIS-trainval/masks'
 
-video_file = '/home/cap/dataset/tiny_DAVIS/ImageSets/2017/train.txt'
+video_file = '/mnt/qinlikun/dataset/DAVIS/DAVIS-semisupervised/DAVIS-trainval/ImageSets/2017/train.txt'
 
 if not os.path.exists(save_dir):
     os.mkdir(save_dir)
