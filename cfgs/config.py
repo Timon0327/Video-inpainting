@@ -8,7 +8,7 @@
 ############### General Settings ################
 '''
 IMG_SIZE = (640, 640)       # (1792, 1792)
-DATA_ROOT = '/mnt/qinlikun/dataset/tiny_DAVIS'
+DATA_ROOT = '/mnt/qinlikun/dataset/DAVIS'
 
 # corrupted area has size of (MASK_RATIO * height, MASK_RATIO * width)
 MASK_RATIO = 0.25
@@ -37,7 +37,7 @@ SAVE_DIR = '/mnt/qinlikun/inpainting'
 
 # maximum steps
 MAX_ITER = 100000
-DECAY_STEPS = [80000, 90000]
+DECAY_STEPS = [60000, 80000]
 
 EPOCH= 100
 
