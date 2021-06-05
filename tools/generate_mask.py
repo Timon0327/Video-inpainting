@@ -6,6 +6,8 @@ import numpy as np
 import cv2 as cv
 import os
 from utils.image import rand_bbox_mask
+import sys
+sys.path.append('..')
 from cfgs import config
 
 data_dir = '/mnt/qinlikun/dataset/DAVIS/DAVIS-semisupervised/DAVIS-trainval/JPEGImages/480p'
