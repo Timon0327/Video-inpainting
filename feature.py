@@ -18,7 +18,7 @@ if not os.path.exists(output_dir):
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = "2,3"
 
-def extract_features(backbone, dataset='davis', batch_size=1):
+def extract_features(backbone, dataset='davis', batch_size=8):
     '''
     extract feature
     :param backbone: str, 'resnet50' or 'resnet101'
@@ -28,7 +28,7 @@ def extract_features(backbone, dataset='davis', batch_size=1):
     '''
     # load data
     if dataset == 'davis':
-        feature_dataset = ResnetInfer(data_root='/mnt/qinlikun/dataset/tiny_DAVIS',
+        feature_dataset = ResnetInfer(data_root=config.DATA_ROOT,
                                   mask_dir=None,
                                   out_dir=None,
                                   slice=config.SLICE,
