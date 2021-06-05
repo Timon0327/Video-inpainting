@@ -87,6 +87,8 @@ class FlownetInfer(Dataset):
 
         # record video names
         self.video_list = os.listdir(self.img_dir)
+        t = self.video_list.index('.DS_Store')
+        del self.video_list[t]
         self.video_list.sort()
 
         if mode == 'gt':
@@ -411,6 +413,8 @@ class ResnetInfer(Dataset):
 
         # record video names
         self.video_list = os.listdir(self.img_dir)
+        t = self.video_list.index('.DS_Store')
+        del self.video_list[t]
         self.video_list.sort()
 
         self.file = os.path.join(data_root, 'ImageSets', '2017', 'feature.txt')
