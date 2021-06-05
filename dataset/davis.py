@@ -121,18 +121,18 @@ class FlownetInfer(Dataset):
                                 f.write(os.path.join(os.path.join(self.mask_dir, video), imgs[i + 1][:-4] + '.png'))
                             f.write('\n')
 
-                        if i - 1 >= 0:
-                            f.write(os.path.join(os.path.join(self.img_dir, video), imgs[i]))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(self.img_dir, video), imgs[i - 1]))
-                            f.write(' ')
-                            f.write(os.path.join(os.path.join(self.out_dir, video), imgs[i][:-4] + '.rflo'))
-                            if mode == 'restore':
-                                f.write(' ')
-                                f.write(os.path.join(os.path.join(self.mask_dir, video), imgs[i][:-4] + '.png'))
-                                f.write(' ')
-                                f.write(os.path.join(os.path.join(self.mask_dir, video), imgs[i - 1][:-4] + '.png'))
-                            f.write('\n')
+                        # if i - 1 >= 0:
+                        #     f.write(os.path.join(os.path.join(self.img_dir, video), imgs[i]))
+                        #     f.write(' ')
+                        #     f.write(os.path.join(os.path.join(self.img_dir, video), imgs[i - 1]))
+                        #     f.write(' ')
+                        #     f.write(os.path.join(os.path.join(self.out_dir, video), imgs[i][:-4] + '.rflo'))
+                        #     if mode == 'restore':
+                        #         f.write(' ')
+                        #         f.write(os.path.join(os.path.join(self.mask_dir, video), imgs[i][:-4] + '.png'))
+                        #         f.write(' ')
+                        #         f.write(os.path.join(os.path.join(self.mask_dir, video), imgs[i - 1][:-4] + '.png'))
+                        #     f.write('\n')
 
 
         self.frame_list1 = []
