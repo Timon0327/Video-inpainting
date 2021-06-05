@@ -36,10 +36,10 @@ RESNET101_WEIGHT = '/mnt/qinlikun/inpainting/resnet/resnet101-5d3b4d8f.pth '
 SAVE_DIR = '/mnt/qinlikun/inpainting'
 
 # maximum steps
-MAX_ITER = 100000
-DECAY_STEPS = [60000, 80000]
+MAX_ITER = 50000
+DECAY_STEPS = [30000, 40000]
 
-EPOCH= 100
+EPOCH = 60
 
 BATCH_SIZE = 8
 

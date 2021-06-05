@@ -190,8 +190,20 @@ def train(args):
         print('epe for validation is ', test_epe)
         writer.add_scalar('valid epe', test_epe, global_step=step)
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+        if step > args.max_iter:
+            break
+
+    path = os.path.join(ckpt_dir, 'flownetcg_' + 'final'+ str(step) + '.pt')
+    torch.save({
+        'epoch': epoch,
+        'step': step,
+        'flownetcg': flownetcg.state_dict(),
+        'optimizer': optimizer.state_dict(),
+    }, path)
+    print('model has been saved in ', path)
 
     writer.close()
+
 
 
 if __name__ == '__main__':
