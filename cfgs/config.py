@@ -39,7 +39,7 @@ SAVE_DIR = '/mnt/qinlikun/inpainting'
 MAX_ITER = 50000
 DECAY_STEPS = [30000, 40000]
 
-EPOCH = 60
+EPOCH = 100
 
 BATCH_SIZE = 8
 
