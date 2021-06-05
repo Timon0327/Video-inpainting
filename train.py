@@ -137,13 +137,9 @@ def train(args):
                 print('frames size: ', frames.size())
                 print('feature size: ', feature.size())
                 print('gt size: ', gt.size())
-                print('gt device: ', gt.device)
                 print('result size: ', res_flow.size())
-                print('result device: ', res_flow.device)
 
             loss = l1loss(res_flow, gt)
-            if step == 1:
-                print(loss.device)
 
             optimizer.zero_grad()
             loss[0].backward()
