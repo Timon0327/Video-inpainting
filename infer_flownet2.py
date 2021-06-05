@@ -8,7 +8,7 @@ from mmcv import ProgressBar
 
 from models import FlowNet2
 from dataset.davis import FlownetInfer
-from cfgs import config_local as config
+from cfgs import config
 
 
 def parse_args():
