@@ -16,7 +16,7 @@ def parse_args():
 
     parser.add_argument('--pretrained_model_flownet2', type=str,
                         default=config.FLOWNET_WEIGHT)
-    parser.add_argument('--mode', type=str, default='restore')
+    parser.add_argument('--mode', type=str, default='gt')
     parser.add_argument('--img_size', type=list, default=config.IMG_SIZE)
     parser.add_argument('--rgb_max', type=float, default=255.)
     parser.add_argument('--fp16', action='store_true')
