@@ -91,7 +91,7 @@ def train(args):
     print("1 valid epoch has ", len(valid_dataset) // args.batch_size, ' iterations')
 
     # loss and optimizer
-    l1loss = L1Loss().to(device)
+    l1loss = L1Loss(args).to(device)
     optimizer = torch.optim.SGD(flownetcg.parameters(), lr=args.LR,
                                 momentum=0.9, weight_decay=args.WEIGHT_DECAY)
 

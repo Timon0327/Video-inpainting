@@ -18,7 +18,7 @@ if not os.path.exists(output_dir):
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = "2,3"
 
-def extract_features(backbone, dataset='davis', batch_size=8):
+def extract_features(backbone, dataset='davis', batch_size=1):
     '''
     extract feature
     :param backbone: str, 'resnet50' or 'resnet101'
