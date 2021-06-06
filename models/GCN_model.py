@@ -150,14 +150,14 @@ class GCN_3(nn.Module):
         out = self.layer3(out)  # [N, nodes, 2048]
 
         out = torch.transpose(out, dim0=1, dim1=2)  # [N, 2048, nodes]
-        # batch = out.size()[0]
+        batch = out.size()[0]
         out = out.reshape(-1, 2 * self.frames, self.slice, self.slice)     # [N * 2048, 2 * frames, slice, slice]
         # print(out.size())
 
         out_conv1 = self.conv1x1(out)     # [N * 2048, 1, slice, slice]
         out = torch.squeeze(out_conv1)    # [N * 2048, slice, slice]
 
-        out = out.view(self.batch, 2048, self.slice, self.slice)
+        out = out.view(batch, 2048, self.slice, self.slice)
 
         # for the case where slice is 2 and height of img is 640
         out = self.upsample(out)       # [N, 2048, 4, 4]
