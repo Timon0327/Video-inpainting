@@ -122,6 +122,10 @@ def train(args):
         # flownetcg = DistributedDataParallel(flownetcg)
         print('using ', torch.cuda.device_count(), ' cuda device(s)')
 
+    # best model
+    best_step = 0
+    best_epe = 100
+
     # train
     for epoch in range(epc, args.EPOCH):
         print('------------Next epoch ', epoch, '----------')
@@ -185,6 +189,10 @@ def train(args):
                 test_losses.append(l1loss(res_flow, gt)[1].item())
         test_epe = np.sum(test_losses) / valid_len
         print('epe for validation is ', test_epe)
+        if test_epe < best_epe:
+            best_epe = test_epe
+            best_step = step
+            print('new best!!')
         writer.add_scalar('valid epe', test_epe, global_step=step)
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
         if step > args.max_iter:
@@ -198,6 +206,9 @@ def train(args):
         'optimizer': optimizer.state_dict(),
     }, path)
     print('model has been saved in ', path)
+
+    print('best model at ', best_step)
+    print('with epe at ', best_epe)
 
     writer.close()
 
