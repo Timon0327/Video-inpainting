@@ -285,7 +285,7 @@ class FlownetCGData(Dataset):
                         f.write(os.path.join(os.path.join(self.mask_dir, video), first + '.png'))
                         f.write(' ')
                         f.write(os.path.join(os.path.join(self.mask_dir, video), second + '.png'))
-                        if mode == 'train':
+                        if mode == 'train' or mode == 'valid':
                             f.write(' ')
                             f.write(os.path.join(os.path.join(self.gt_dir, video), first + '.flo'))
                         else:
@@ -312,7 +312,7 @@ class FlownetCGData(Dataset):
                 self.feature_list.append(filenames[2])
                 self.mask_list1.append(filenames[3])
                 self.mask_list2.append(filenames[4])
-                if mode == 'train':
+                if mode == 'train' or mode == 'valid':
                     self.gt_list.append(filenames[5])
                 else:
                     self.out_list.append(filenames[-1])
@@ -631,15 +631,16 @@ class GFCNetData(Dataset):
 
 
 if __name__ == '__main__':
-    dataset = FlownetInfer(data_root='/home/captain/dataset/tiny_DAVIS',
-                            mode='restore',
-                            out_dir='/home/captain/dataset/tiny_DAVIS/flow',
-                            mask_dir=None)
+    # dataset = FlownetInfer(data_root='/home/captain/dataset/tiny_DAVIS',
+    #                         mode='restore',
+    #                         out_dir='/home/captain/dataset/tiny_DAVIS/flow',
+    #                         mask_dir=None)
     # dataset = ResnetInfer(data_root='/home/captain/dataset/tiny_DAVIS',
     #                       mask_dir=None,
     #                       out_dir=None,
     #                       slice=config.SLICE,
     #                       N=config.N)
+    dataset = FlownetCGData(data_root='/home/cap/dataset/tiny_DAVIS', mode='valid')
     print(len(dataset))
     dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
     # res = dataset.__getitem__(5)

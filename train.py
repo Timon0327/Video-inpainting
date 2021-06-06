@@ -175,7 +175,8 @@ def train(args):
         test_losses = []
         with torch.no_grad():
 
-            for valid_data in valid_dataloader:
+            for j, valid_data in enumerate(valid_dataloader):
+                print(j)
                 frames = valid_data['frames'].to(device)
                 feature = valid_data['feature'].to(device)
                 gt = valid_data['gt'].to(device)
