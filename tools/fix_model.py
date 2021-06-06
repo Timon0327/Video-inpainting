@@ -7,7 +7,7 @@ import torch
 import copy
 import os
 
-model_dir = '/mnt/qinlikun/inpainting/ckpt'
+model_dir = '/home/cap/project/inpainting'
 
 
 def fix(model):
@@ -29,6 +29,5 @@ def fix(model):
     torch.save(ckpt, os.path.join(model_dir,filename))
 
 if __name__ == '__main__':
-    models = os.listdir(model_dir)
-    for one in models:
-        fix(one)
+
+    fix('flownetcg_11000.pt')

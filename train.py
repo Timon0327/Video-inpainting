@@ -103,6 +103,10 @@ def train(args):
         step = ckpt['step']
         epc = ckpt['epoch']
         optimizer.load_state_dict(ckpt['optimizer'])
+        for state in optimizer.state.values():
+            for k, v in state.items():
+                if torch.is_tensor(v):
+                    state[k] = v.cuda()
         print('start from ', step, ' step')
     else:
         # start from scratch
@@ -110,7 +114,7 @@ def train(args):
         flownetcg.load_state_dict(ckpt, strict=False)
         step = 0
         epc = 0
-        print('start from the bery begining')
+        print('start from the very begining')
 
     if torch.cuda.device_count() > 1:
         flownetcg = torch.nn.DataParallel(flownetcg)
@@ -167,7 +171,7 @@ def train(args):
                 torch.save({
                     'epoch': epoch,
                     'step': step,
-                    'flownetcg': flownetcg.state_dict(),
+                    'flownetcg': flownetcg.module.state_dict(),
                     'optimizer': optimizer.state_dict(),
                     'loss': loss[0].item()
                 }, path)
@@ -202,7 +206,7 @@ def train(args):
     torch.save({
         'epoch': epoch,
         'step': step,
-        'flownetcg': flownetcg.state_dict(),
+        'flownetcg': flownetcg.module.state_dict(),
         'optimizer': optimizer.state_dict(),
     }, path)
     print('model has been saved in ', path)
