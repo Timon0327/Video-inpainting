@@ -173,7 +173,7 @@ def train(args):
         print('~~~~~~~~~~~~~~~~~~~~~')
         flownetcg.eval()
         test_losses = []
-        with torch.no_grad:
+        with torch.no_grad():
 
             for valid_data in valid_dataloader:
                 frames = valid_data['frames'].to(device)
