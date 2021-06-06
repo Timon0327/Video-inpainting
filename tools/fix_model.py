@@ -14,7 +14,7 @@ def fix(model):
     '''
     @param model: model path
     '''
-    ckpt = torch.load(model)
+    ckpt = torch.load(os.path.join(model_dir, model))
     state_dict = ckpt['flownetcg']
     result = copy.deepcopy(state_dict)
     for key in list(state_dict):
