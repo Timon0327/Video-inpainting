@@ -37,7 +37,7 @@ SAVE_DIR = '/mnt/qinlikun/inpainting'
 
 # maximum steps
 MAX_ITER = 25000
-DECAY_STEPS = [15000, 20000]
+DECAY_EPOCHES = [30, 40]
 
 EPOCH = 50
 

@@ -10,7 +10,8 @@ import yaml
 import numpy as np
 from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
-from torch.nn.parallel import DistributedDataParallel
+from torch.optim.lr_scheduler import MultiStepLR
+# from torch.nn.parallel import DistributedDataParallel
 
 from dataset.davis import FlownetCGData
 from models.FlownetCG import FlownetCG, change_state_dict
@@ -40,7 +41,7 @@ def parse_args():
     parser.add_argument('--WEIGHT_DECAY', type=float, default=config.WEIGHTED_DECAY)
     parser.add_argument('--PRINT_EVERY', type=int, default=10)
     parser.add_argument('--MODEL_SAVE_STEP', type=int, default=1000)
-    parser.add_argument('--DECAY_STEPS', type=list, default=config.DECAY_STEPS)
+    parser.add_argument('--DECAY_EPOCHES', type=list, default=config.DECAY_EPOCHES)
 
     # parser.add_argument('--VALID_EVERY', type=int, default=100)
 
@@ -92,8 +93,6 @@ def train(args):
 
     # loss and optimizer
     l1loss = L1Loss(args).to(device)
-    optimizer = torch.optim.SGD(flownetcg.parameters(), lr=args.LR,
-                                momentum=0.9, weight_decay=args.WEIGHT_DECAY)
 
     # whether to continue training or train from the start
     if args.checkpoint:
@@ -102,11 +101,11 @@ def train(args):
         flownetcg.load_state_dict(ckpt['flownetcg'])
         step = ckpt['step']
         epc = ckpt['epoch']
-        optimizer.load_state_dict(ckpt['optimizer'])
-        for state in optimizer.state.values():
-            for k, v in state.items():
-                if torch.is_tensor(v):
-                    state[k] = v.cuda()
+        # optimizer.load_state_dict(ckpt['optimizer'])
+        # for state in optimizer.state.values():
+        #     for k, v in state.items():
+        #         if torch.is_tensor(v):
+        #             state[k] = v.cuda()
         print('start from ', step, ' step')
     else:
         # start from scratch
@@ -126,6 +125,17 @@ def train(args):
         # flownetcg = DistributedDataParallel(flownetcg)
         print('using ', torch.cuda.device_count(), ' cuda device(s)')
 
+    optimizer = torch.optim.SGD(flownetcg.parameters(), lr=args.LR,
+                                momentum=0.9, weight_decay=args.WEIGHT_DECAY)
+
+    if args.checkpoint:
+        optimizer.load_state_dict(ckpt['optimizer'])
+        # for state in optimizer.state.values():
+        #     for k, v in state.items():
+        #         if torch.is_tensor(v):
+        #             state[k] = v.cuda()
+    scheduler = MultiStepLR(optimizer, milestones=args.DECAY_EPOCHES)
+
     # best model
     best_step = 0
     best_epe = 100
@@ -133,6 +143,7 @@ def train(args):
     # train
     for epoch in range(epc, args.EPOCH):
         print('------------Next epoch ', epoch, '----------')
+        print('lr:', scheduler.get_lr())
         print('training...')
         for data in train_dataloader:
             step += 1
@@ -162,9 +173,9 @@ def train(args):
                 writer.add_scalar('loss', loss[0].item(), global_step=step)
                 writer.add_scalar('epe', loss[1].item(), global_step=step)
 
-            if step in args.DECAY_STEPS:
-                optimizer['lr'] *= 0.1
-                print('lr changed at step ', step)
+            # if step in args.DECAY_STEPS:
+            #     optimizer['lr'] *= 0.1
+            #     print('lr changed at step ', step)
 
             if step % args.MODEL_SAVE_STEP == 0:
                 path = os.path.join(ckpt_dir, 'flownetcg_'+str(step)+'.pt')
@@ -199,6 +210,7 @@ def train(args):
             print('new best!!')
         writer.add_scalar('valid epe', test_epe, global_step=step)
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+        scheduler.step()
         if step > args.max_iter:
             break
 
