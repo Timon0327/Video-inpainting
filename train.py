@@ -209,6 +209,8 @@ def train(args):
             best_step = step
             print('new best!!')
         writer.add_scalar('valid epe', test_epe, global_step=step)
+        print('the best epe so far is', best_epe)
+        print('the best epe is at ', best_step)
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
         scheduler.step()
         if step > args.max_iter:
