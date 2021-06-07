@@ -7,6 +7,7 @@ import torch
 import os
 import argparse
 from tqdm import tqdm
+import yaml
 import numpy as np
 from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
