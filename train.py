@@ -6,7 +6,7 @@
 import torch
 import os
 import argparse
-import yaml
+from tqdm import tqdm
 import numpy as np
 from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
@@ -192,10 +192,20 @@ def train(args):
         print('~~~~~~~~~~~~~~~~~~~~~')
         flownetcg.eval()
         test_losses = []
+        valid_iterator = iter(valid_dataloader)
         with torch.no_grad():
 
-            for j, valid_data in enumerate(valid_dataloader):
-                print(j)
+            for i in tqdm(range(0, len(valid_dataset) // args.batch_size)):
+                # st = time.time()
+                try:
+                    valid_data = next(valid_iterator)
+                except:
+                    print('Loader Restart')
+                    valid_iterator = iter(valid_dataloader)
+                    valid_data = next(valid_iterator)
+
+            # for j, valid_data in enumerate(valid_dataloader):
+                # print(j)
                 frames = valid_data['frames'].to(device)
                 feature = valid_data['feature'].to(device)
                 gt = valid_data['gt'].to(device)
