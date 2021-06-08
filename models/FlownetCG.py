@@ -15,6 +15,7 @@ from cfgs import config
 import torch.nn.init as init
 import torch
 import torch.nn as nn
+from torch.optim.lr_scheduler import MultiStepLR
 import argparse
 from torch.utils.data import DataLoader
 from dataset.davis import FlownetCGData
@@ -223,6 +224,16 @@ if __name__ == '__main__':
     #     print(child)
     # for param in flownetcg.parameters():
     #    print(param)
+
+
+
+    optimizer = torch.optim.SGD(flownetcg.parameters(), lr=0.001,
+                                momentum=0.9, weight_decay=0.00004)
+    scheduler = MultiStepLR(optimizer, milestones=[3, 5])
+
+    for i in range(10):
+        print(scheduler.get_lr())
+        scheduler.step()
 
     dataset = FlownetCGData(data_root=config.DATA_ROOT, mode='train')
     dataloader = DataLoader(dataset, batch_size=config.BATCH_SIZE)
