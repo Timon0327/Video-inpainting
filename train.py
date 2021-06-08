@@ -213,7 +213,7 @@ def train(args):
                 res_flow = flownetcg(frames, feature)
 
                 test_losses.append(l1loss(res_flow, gt)[1].item())
-        test_epe = np.sum(test_losses) / valid_len
+        test_epe = np.sum(test_losses) / len(test_losses)
         print('epe for validation is ', test_epe)
         if test_epe < best_epe:
             best_epe = test_epe
