@@ -4,7 +4,7 @@
 '''
 
 import torch
-import os
+import time
 import argparse
 from tqdm import tqdm
 import numpy as np
@@ -57,6 +57,7 @@ def valid(args):
     # writer.add_graph(flownetcg)
 
     print("1 valid epoch has ", len(valid_dataset) // args.batch_size, ' iterations')
+    print('validation set has ', len(valid_dataset), ' image pairs')
 
     # loss and optimizer
     l1loss = L1Loss(args).to(device)
@@ -89,6 +90,7 @@ def valid(args):
     flownetcg.eval()
     epes = []
     valid_iterator = iter(valid_dataloader)
+    start_time = time.time()
     with torch.no_grad():
 
         for i in tqdm(range(0, len(valid_dataset) // args.batch_size)):
@@ -109,10 +111,12 @@ def valid(args):
                 print('gt size ', gt.size())
                 print('result size', res_flow.size())
             epes.append(l1loss(res_flow, gt)[1].item())
+    end_time = time.time()
     print('how many epe: ', len(epes))
     print('epes[0]:', epes[0])
     test_epe = np.sum(epes) / len(epes)
     print('epe for validation is ', test_epe)
+    print('cost time: ', end_time - start_time)
 
 
 if __name__ == '__main__':
