@@ -109,6 +109,8 @@ def valid(args):
                 print('gt size ', gt.size())
                 print('result size', res_flow.size())
             epes.append(l1loss(res_flow, gt)[1].item())
+    print('how many epe: ', len(epes))
+    print('epes[0]:', epes[0])
     test_epe = np.sum(epes) / valid_len
     print('epe for validation is ', test_epe)
 
