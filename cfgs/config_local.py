@@ -13,6 +13,9 @@ DATA_ROOT = '/home/cap/dataset/tiny_DAVIS'
 # corrupted area has size of (MASK_RATIO * height, MASK_RATIO * width)
 MASK_RATIO = 0.25
 
+# mask type, 'random' is random bbox, 'mid' is mid bbox
+MASK_TYPE = 'random'
+
 # each image is divided by SLICE * SLICE patches
 SLICE = 2
 

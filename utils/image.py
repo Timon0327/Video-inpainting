@@ -38,7 +38,6 @@ def apply_mask_resize(frame, size, slice, mask):
         return img_big
 
 
-
 def apply_mask(frame, mask):
     '''
     set pixels in regions specified by mask to zero
@@ -67,6 +66,28 @@ def rand_bbox_mask(image_shape, margin, rect_shape):
 
     y = random.randint(margin[0], image_shape[0] - margin[0] - rect_shape[0])
     x = random.randint(margin[1], image_shape[1] - margin[1] - rect_shape[1])
+
+    w = rect_shape[1]
+    h = rect_shape[0]
+
+    mask[y: y + h, x: x + w] = 128
+    return mask
+
+
+def mid_bbox_mask(image_shape, rect_shape):
+    '''
+    generate mid rectangle mask
+    :param image_shape: the shape of image, tuple, (height, width)
+    :param rect_shape: the shape of rectangle, tuple, (height, width)
+    :return: mask, ndarray, [width, height]
+    '''
+    mask = np.zeros(image_shape)
+
+    # y = random.randint(margin[0], image_shape[0] - margin[0] - rect_shape[0])
+    # x = random.randint(margin[1], image_shape[1] - margin[1] - rect_shape[1])
+
+    x = (image_shape[1] - rect_shape[1]) // 2
+    y = (image_shape[0] - rect_shape[0]) // 2
 
     w = rect_shape[1]
     h = rect_shape[0]
