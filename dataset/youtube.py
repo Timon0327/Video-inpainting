@@ -1,28 +1,21 @@
 '''
-#  filename: davis.py
-#  customize dataset for DAVIS
+#  filename: youtube.py
+#  customize dataset for Yotube-VOS
 #  altogether 3 types of dataset for 5 occasions:
-#  GFCNet
-#  1. for training and validation
-#       get: corrupted flows (forward and backward), features of 2N+1 neighboring frames, mask, ground-truth flows
-#       usage: training GCN and flow completion network in the back
-#  2. for test:
-#       get: corrupted flows (forward and backward), features of 2N+1 neighboring frames, output_file
-#       usage: test GCN and flow completion network in the back
-#
 #  FlowNet
-#  3. generate corrupted flow
-#       get: 2 consecutive frames
-#       usage: input for inferring stage of FlowNet2
 #  4. generate ground truth flow
 #       get: 2 consecutive frames
 #       usage: input for inferring stage of FlowNet2
 #
 #  ResNet
 #  5. generate features of corrupted frames
-#       get: 2N+1 consecutive frames
+#       get: 2N consecutive frames
 #       usage: input for Resnet
 #
+#  FlownetCG
+#  6. training, validation, and testing for FlownetCG
+#       get: 2 consecutive corrupted frames, features for neighboring frames (masks for frames, ground truth)
+#            (output file names)
 #  Likun Qin, 2021
 '''
 import torch
@@ -44,7 +37,7 @@ class FlownetInfer(Dataset):
     '''
     dataset for FlowNet2
     '''
-    def __init__(self, data_root, mode, out_dir, mask_dir=None):
+    def __init__(self, data_root, out_dir=None, mask_dir=None):
         '''
         initialization
         data_root structure:
@@ -52,26 +45,17 @@ class FlownetInfer(Dataset):
                 |-- Annotations
                 |-- JPEGImages
                 |-- masks
-                |-- ImageSets
                 |-- feature (possibly)
                 |-- flow (possibly)
                 |-- gt (possibly)
-        modes:
-            gt -- generate ground-truth with raw complete frames
-            restore -- generate flow with corrupted frames
         :param data_root: the directory of dataroot
-        :param mode: str, 'gt' or 'restore'
         :param out_dir: the directory to store output flow files
         :param mask_dir: the directory storing masks. If none, use self-generated masks then
         '''
         self.data_root = data_root
-        self.mode = mode
 
         if not out_dir:
-            if mode == 'gt':
-                self.out_dir = os.path.join(data_root, 'gt')
-            else:
-                self.out_dir = os.path.join(data_root, 'flow')
+            self.out_dir = os.path.join(data_root, 'gt')
         else:
             self.out_dir = out_dir
 
@@ -79,7 +63,7 @@ class FlownetInfer(Dataset):
             os.mkdir(self.out_dir)
 
         # set path
-        self.img_dir = os.path.join(data_root, 'JPEGImages', '480p')  # Full-Resolution
+        self.img_dir = os.path.join(data_root, 'JPEGImages')
         if not mask_dir:
             self.mask_dir = os.path.join(data_root, 'masks')
         else:
@@ -87,14 +71,14 @@ class FlownetInfer(Dataset):
 
         # record video names
         self.video_list = os.listdir(self.img_dir)
-        t = self.video_list.index('.DS_Store')
-        del self.video_list[t]
+        try:
+            t = self.video_list.index('.DS_Store')
+            del self.video_list[t]
+        except ValueError:
+            pass
         self.video_list.sort()
 
-        if mode == 'gt':
-            self.file = os.path.join(data_root, 'ImageSets', '2017', 'gt.txt')
-        else:
-            self.file = os.path.join(data_root, 'ImageSets', '2017', 'bad_flow.txt')
+        self.file = os.path.join(data_root, 'ImageSets', '2017', 'gt.txt')
 
         if not os.path.exists(self.file):
             with open(self.file, 'w') as f:
@@ -114,11 +98,6 @@ class FlownetInfer(Dataset):
                             f.write(os.path.join(os.path.join(self.img_dir, video), imgs[i + 1]))
                             f.write(' ')
                             f.write(os.path.join(os.path.join(self.out_dir, video), imgs[i][:-4] + '.flo'))
-                            if mode == 'restore':
-                                f.write(' ')
-                                f.write(os.path.join(os.path.join(self.mask_dir, video), imgs[i][:-4] + '.png'))
-                                f.write(' ')
-                                f.write(os.path.join(os.path.join(self.mask_dir, video), imgs[i + 1][:-4] + '.png'))
                             f.write('\n')
 
                         if i - 1 >= 0:
@@ -127,13 +106,7 @@ class FlownetInfer(Dataset):
                             f.write(os.path.join(os.path.join(self.img_dir, video), imgs[i - 1]))
                             f.write(' ')
                             f.write(os.path.join(os.path.join(self.out_dir, video), imgs[i][:-4] + '.rflo'))
-                            if mode == 'restore':
-                                f.write(' ')
-                                f.write(os.path.join(os.path.join(self.mask_dir, video), imgs[i][:-4] + '.png'))
-                                f.write(' ')
-                                f.write(os.path.join(os.path.join(self.mask_dir, video), imgs[i - 1][:-4] + '.png'))
                             f.write('\n')
-
 
         self.frame_list1 = []
         self.frame_list2 = []
@@ -149,9 +122,6 @@ class FlownetInfer(Dataset):
                 self.frame_list1.append(filenames[0])
                 self.frame_list2.append(filenames[1])
                 self.flow_list.append(filenames[2])
-                if mode == 'restore':
-                    self.mask_list1.append(filenames[3])
-                    self.mask_list2.append(filenames[4])
 
     def __len__(self):
         return len(self.frame_list1)
@@ -166,18 +136,10 @@ class FlownetInfer(Dataset):
         frame1 = cv.imread(self.frame_list1[idx])
         frame2 = cv.imread(self.frame_list2[idx])
 
-        if self.mode == 'gt':
-            frame1 = cv.resize(frame1, config.IMG_SIZE)
-            frame2 = cv.resize(frame2, config.IMG_SIZE)
-            img1 = totensor(frame1)
-            img2 = totensor(frame2)
-
-        else:
-            mask1 = cv.imread(self.mask_list1[idx])[:, :, 2]
-            mask2 = cv.imread(self.mask_list2[idx])[:, :, 2]
-
-            img1 = apply_mask_resize(frame1, size=config.IMG_SIZE, slice=0, mask=mask1)
-            img2 = apply_mask_resize(frame2, size=config.IMG_SIZE, slice=0, mask=mask2)
+        frame1 = cv.resize(frame1, config.IMG_SIZE)
+        frame2 = cv.resize(frame2, config.IMG_SIZE)
+        img1 = totensor(frame1)
+        img2 = totensor(frame2)
 
         result = {'frame1': img1,
                   'frame2': img2,
@@ -198,7 +160,6 @@ class FlownetCGData(Dataset):
                 |-- Annotations
                 |-- JPEGImages
                 |-- masks
-                |-- ImageSets
                 |-- feature (possibly)
                 |-- flow (possibly)
                 |-- gt (possibly)
@@ -225,37 +186,55 @@ class FlownetCGData(Dataset):
             os.mkdir(self.out_dir)
 
         # set path
-        self.img_dir = os.path.join(data_root, 'JPEGImages', '480p')  # Full-Resolution
+        self.img_dir = os.path.join(data_root, 'JPEGImages')  # Full-Resolution
         if not mask_dir:
             self.mask_dir = os.path.join(data_root, 'masks')
         else:
             self.mask_dir = mask_dir
+        assert os.path.exists(self.mask_dir)
 
         if not feature_dir:
             self.feature_dir = os.path.join(data_root, 'feature')
         else:
             self.feature_dir = feature_dir
+        assert os.path.exists(self.feature_dir)
 
         if not gt_dir:
             self.gt_dir = os.path.join(data_root, 'gt')
         else:
-            self.gt_dir = feature_dir
+            self.gt_dir = gt_dir
+        assert os.path.exists(self.gt_dir)
 
-        # load video names
-        if mode == 'train':
-            self.video_file = os.path.join(data_root, 'ImageSets', '2017', 'train.txt')
-            self.file = os.path.join(data_root, 'ImageSets', '2017', 'train_gflownet.txt')
-        elif mode == 'valid':
-            self.video_file = os.path.join(data_root, 'ImageSets', '2017', 'val.txt')
-            self.file = os.path.join(data_root, 'ImageSets', '2017', 'valid_gflownet.txt')
+        # if mode == 'train':
+        #     self.video_file = os.path.join(data_root, 'ImageSets', '2017', 'train.txt')
+        #     self.file = os.path.join(data_root, 'ImageSets', '2017', 'train_gflownet.txt')
+        # elif mode == 'valid':
+        #     self.video_file = os.path.join(data_root, 'ImageSets', '2017', 'val.txt')
+        #     self.file = os.path.join(data_root, 'ImageSets', '2017', 'valid_gflownet.txt')
+        # else:
+        #     self.video_file = os.path.join(data_root, 'ImageSets', '2017', 'test.txt')
+        #     self.file = os.path.join(data_root, 'ImageSets', '2017', 'test_gflownet.txt')
+        #
+        # with open(self.video_file, 'r') as f:
+        #     tmp = f.readlines()
+        #     self.video_list = [x[:-1] for x in tmp]
+        #     # self.video_list.sort()
+
+        # load video name
+        self.video_list = os.listdir(self.img_dir)
+        try:
+            t = self.video_list.index('.DS_Store')
+            del self.video_list[t]
+        except ValueError:
+            pass
+        self.video_list.sort()
+
+        if self.mode == 'train':
+            self.file = os.path.join(data_root, 'train_gflownet.txt')
+        elif self.mode == 'valid':
+            self.file = os.path.join(data_root, 'valid_gflownet.txt')
         else:
-            self.video_file = os.path.join(data_root, 'ImageSets', '2017', 'test.txt')
-            self.file = os.path.join(data_root, 'ImageSets', '2017', 'test_gflownet.txt')
-
-        with open(self.video_file, 'r') as f:
-            tmp = f.readlines()
-            self.video_list = [x[:-1] for x in tmp]
-            # self.video_list.sort()
+            self.file = os.path.join(data_root, 'test_gflownet.txt')
 
         if not os.path.exists(self.file):
             with open(self.file, 'w') as f:
@@ -392,7 +371,6 @@ class ResnetInfer(Dataset):
                 |-- Annotations
                 |-- JPEGImages
                 |-- masks
-                |-- ImageSets
                 |-- feature (possibly)
                 |-- flow (possibly)
                 |-- gt (possibly)
@@ -414,12 +392,13 @@ class ResnetInfer(Dataset):
         self.intervals.sort()
 
         self.data_root = data_root
-        self.img_dir = os.path.join(data_root, 'JPEGImages', '480p')    # Full-Resolution
+        self.img_dir = os.path.join(data_root, 'JPEGImages')
 
         if mask_dir:
             self.mask_dir = mask_dir
         else:
             self.mask_dir = os.path.join(data_root, 'masks')
+        assert os.path.exists(self.mask_dir)
 
         if out_dir:
             self.out_dir = out_dir
@@ -431,11 +410,14 @@ class ResnetInfer(Dataset):
 
         # record video names
         self.video_list = os.listdir(self.img_dir)
-        t = self.video_list.index('.DS_Store')
-        del self.video_list[t]
+        try:
+            t = self.video_list.index('.DS_Store')
+            del self.video_list[t]
+        except ValueError:
+            pass
         self.video_list.sort()
 
-        self.file = os.path.join(data_root, 'ImageSets', '2017', 'feature.txt')
+        self.file = os.path.join(data_root, 'feature.txt')
 
         if not os.path.exists(self.file):
             with open(self.file, 'w') as f:
