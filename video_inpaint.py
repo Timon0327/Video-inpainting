@@ -27,7 +27,7 @@ def parse_argse():
     parser.add_argument('--feature', action='store_true')
     parser.add_argument('--flow', action='store_true')
     parser.add_argument('--dataset_root', type=str,
-                        default=None)
+                        default=config.TEST_ROOT)
     parser.add_argument('--img_size', type=int, nargs='+',
                         default=config.IMG_SIZE)
     parser.add_argument('--rgb_max', type=float, default=255.)
