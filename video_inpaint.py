@@ -15,7 +15,7 @@ from skimage.metrics import peak_signal_noise_ratio, structural_similarity
 from dataset.davis import FlownetCGTrain, ResnetInferTest
 from models.Resnet import resnet50, resnet101
 from models.FlownetCG import FlownetCG
-from cfgs import config_local as config
+from cfgs import config
 import cvbase as cvb
 
 from tools.frame_inpaint import DeepFillv1
@@ -31,12 +31,12 @@ def parse_argse():
     parser.add_argument('--img_size', type=int, nargs='+',
                         default=config.IMG_SIZE)
     parser.add_argument('--rgb_max', type=float, default=255.)
-    parser.add_argument('--frame_dir', type=str, default='/home/cap/dataset/demo/frames',
+    parser.add_argument('--frame_dir', type=str, default=None,
                         help='Give the dir of the video frames and generate the data list to extract flow')
     parser.add_argument('--gt_dir', type=str, default=None,
                         help='Give the dir of the ground truth of video frames')
     parser.add_argument('--checkpoint', type=str,
-                        default='/home/cap/project/inpainting/ckpt/flownetcg_24000.pt')
+                        default='/mnt/qinlikun/inpainting/ckpt/flownetcg_24000.pt')
     parser.add_argument('--batch_size', type=int, default=1)
 
     parser.add_argument('--output_root', type=str,
@@ -61,7 +61,7 @@ def parse_argse():
     parser.add_argument('--output_root_propagation', type=str,
                         default=None)
     parser.add_argument('--pretrained_model_inpaint', type=str,
-                        default='./pretrained_models/imagenet_deepfill.pth')
+                        default=config.DEEPFILL_WEIGHT)
 
     args = parser.parse_args()
 

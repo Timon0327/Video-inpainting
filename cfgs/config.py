@@ -13,7 +13,7 @@ IMG_SIZE = (640, 640)       # (1792, 1792)
 DATASET = 'davis'  # or 'ytb'
 
 # directory of test frames
-TEST_ROOT = '/home/cap/dataset/demo'
+TEST_ROOT = '/mnt/qinlikun/dataset/test'
 
 # corrupted area has size of (MASK_RATIO * height, MASK_RATIO * width)
 MASK_RATIO = 0.25
@@ -36,6 +36,9 @@ FLOWNET_WEIGHT = '/mnt/qinlikun/inpainting/flownet/FlowNet2_checkpoint.pth.tar'
 # Resnet pretrained weight
 RESNET50_WEIGHT = '/mnt/qinlikun/inpainting/resnet/resnet50-19c8e357.pth'
 RESNET101_WEIGHT = '/mnt/qinlikun/inpainting/resnet/resnet101-5d3b4d8f.pth '
+
+# image inpainting model
+DEEPFILL_WEIGHT = '/mnt/qinlikun/inpainting/imagenet_deepfill.pth'
 
 '''
 ############### Training Setting ################
