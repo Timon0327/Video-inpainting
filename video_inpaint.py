@@ -12,7 +12,7 @@ import cv2 as cv
 from torch.utils.data import DataLoader
 from skimage.metrics import peak_signal_noise_ratio, structural_similarity
 
-from dataset.davis import FlownetCGTrain, ResnetInferTest
+from dataset.davis import FlownetCGTest, ResnetInferTest
 from models.Resnet import resnet50, resnet101
 from models.FlownetCG import FlownetCG
 from cfgs import config
@@ -82,7 +82,7 @@ def extract_features(backbone, batch_size=1):
                                       slice=config.SLICE,
                                       N=config.N
                                       )
-
+    print(len(feature_dataset))
     dataloader = DataLoader(feature_dataset, batch_size=batch_size)
 
     # create model
@@ -142,8 +142,8 @@ def extract_flow(args):
 
     # dataset
 
-    test_dataset = FlownetCGTrain(data_root=config.TEST_ROOT, mode='test')
-    test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=True)
+    test_dataset = FlownetCGTest(data_root=config.TEST_ROOT)
+    test_dataloader = DataLoader(test_dataset, batch_size=1)
     test_len = len(test_dataset)
 
     # model

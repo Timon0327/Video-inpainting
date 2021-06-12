@@ -705,8 +705,8 @@ class ResnetInferTest(Dataset):
                 tmp_frame = []
                 for offset in self.intervals[::-1]:
                     tmp_frame.append(imgs[i + offset])
-                    self.frames.append(tmp_frame)
-                    self.out_files.append(imgs[i + 1][:-4] + '.rpk')
+                self.frames.append(tmp_frame)
+                self.out_files.append(imgs[i + 1][:-4] + '.rpk')
 
     def __len__(self):
         return len(self.out_files)
@@ -742,6 +742,9 @@ if __name__ == '__main__':
     #                       out_dir=None,
     #                       slice=config.SLICE,
     #                       N=config.N)
+    dataset = ResnetInferTest(data_root='/home/cap/dataset/demo',
+                          slice=config.SLICE,
+                          N=config.N)
     valid_dataset = FlownetCGTrain(data_root=config.DATA_ROOT, mode='valid')
     print('the size of valid dataset is ', len(valid_dataset))
     print("1 valid epoch has ", len(valid_dataset) // config.BATCH_SIZE, ' iterations')
