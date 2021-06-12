@@ -18,7 +18,7 @@ import torch.nn as nn
 from torch.optim.lr_scheduler import MultiStepLR
 import argparse
 from torch.utils.data import DataLoader
-from dataset.davis import FlownetCGData
+from dataset.davis import FlownetCGTrain
 
 
 class FlownetCG(nn.Module):
@@ -235,7 +235,7 @@ if __name__ == '__main__':
         print(scheduler.get_lr())
         scheduler.step()
 
-    dataset = FlownetCGData(data_root=config.DATA_ROOT, mode='train')
+    dataset = FlownetCGTrain(data_root=config.DATA_ROOT, mode='train')
     dataloader = DataLoader(dataset, batch_size=config.BATCH_SIZE)
 
     for batch, data in enumerate(dataloader):

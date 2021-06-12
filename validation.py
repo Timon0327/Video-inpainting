@@ -10,7 +10,7 @@ from tqdm import tqdm
 import numpy as np
 from torch.utils.data import DataLoader
 
-from dataset.davis import FlownetCGData
+from dataset.davis import FlownetCGTrain
 from models.FlownetCG import FlownetCG
 from cfgs import config
 from utils.losses import L1Loss
@@ -47,7 +47,7 @@ def valid(args):
 
     # dataset
 
-    valid_dataset = FlownetCGData(data_root=config.DATA_ROOT, mode='valid')
+    valid_dataset = FlownetCGTrain(data_root=config.DATA_ROOT, mode='valid')
     valid_dataloader = DataLoader(valid_dataset, batch_size=args.batch_size, shuffle=True)
     valid_len = len(valid_dataset)
 

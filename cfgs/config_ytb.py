@@ -12,14 +12,14 @@ IMG_SIZE = (640, 640)       # (1792, 1792)
 # dataset
 DATASET = 'ytb'  # or 'ytb'
 
-
-DATA_ROOT = '/mnt/qinlikun/dataset/DAVIS/DAVIS-semisupervised/DAVIS-trainval'
+# directory of test frames
+TEST_ROOT = '/home/cap/dataset/demo'
 
 # corrupted area has size of (MASK_RATIO * height, MASK_RATIO * width)
 MASK_RATIO = 0.25
 
 # mask type, 'random' is random bbox, 'mid' is mid bbox
-MASK_TYPE = 'random'
+MASK_TYPE = 'mid'
 
 # each image is divided by SLICE * SLICE patches
 SLICE = 2
@@ -40,6 +40,8 @@ RESNET101_WEIGHT = '/mnt/qinlikun/inpainting/resnet/resnet101-5d3b4d8f.pth '
 '''
 ############### Training Setting ################
 '''
+
+DATA_ROOT = '/mnt/qinlikun/dataset/DAVIS/DAVIS-semisupervised/DAVIS-trainval'
 
 SAVE_DIR = '/mnt/qinlikun/inpainting'
 

@@ -12,7 +12,8 @@ IMG_SIZE = (640, 640)       # (1792, 1792)
 # dataset
 DATASET = 'davis'  # or 'ytb'
 
-DATA_ROOT = '/home/cap/dataset/tiny_DAVIS'
+# directory of test frames
+TEST_ROOT = '/home/cap/dataset/demo'
 
 # corrupted area has size of (MASK_RATIO * height, MASK_RATIO * width)
 MASK_RATIO = 0.25
@@ -33,19 +34,20 @@ N = 4
 FLOWNET_WEIGHT = '/home/cap/project/inpainting/FlowNet2_checkpoint.pth.tar'
 
 # Resnet pretrained weight
-RESNET50_WEIGHT = '/home/cap/project/inpaintingresnet50-19c8e357.pth'
+RESNET50_WEIGHT = '/home/cap/project/inpainting/resnet50-19c8e357.pth'
 RESNET101_WEIGHT = '/home/cap/project/inpainting/resnet101-5d3b4d8f.pth '
 
 '''
 ############### Training Setting ################
 '''
 
+DATA_ROOT = '/home/cap/dataset/tiny_DAVIS'
 SAVE_DIR = '/home/cap/project/inpainting/ckpt'
 
 # maximum steps
 MAX_ITER = 100000
 
-BATCH_SIZE = 2
+BATCH_SIZE = 1
 
 # number of workers for dataloader
 N_THREADS = 8

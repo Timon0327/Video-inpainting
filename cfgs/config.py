@@ -12,8 +12,8 @@ IMG_SIZE = (640, 640)       # (1792, 1792)
 # dataset
 DATASET = 'davis'  # or 'ytb'
 
-
-DATA_ROOT = '/mnt/qinlikun/dataset/DAVIS/DAVIS-semisupervised/DAVIS-trainval'
+# directory of test frames
+TEST_ROOT = '/home/cap/dataset/demo'
 
 # corrupted area has size of (MASK_RATIO * height, MASK_RATIO * width)
 MASK_RATIO = 0.25
@@ -42,7 +42,7 @@ RESNET101_WEIGHT = '/mnt/qinlikun/inpainting/resnet/resnet101-5d3b4d8f.pth '
 '''
 
 SAVE_DIR = '/mnt/qinlikun/inpainting'
-
+DATA_ROOT = '/mnt/qinlikun/dataset/DAVIS/DAVIS-semisupervised/DAVIS-trainval'
 # maximum steps
 MAX_ITER = 25000
 DECAY_EPOCHES = [40, 50]

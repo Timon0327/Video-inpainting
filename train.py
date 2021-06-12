@@ -14,7 +14,7 @@ from tensorboardX import SummaryWriter
 from torch.optim.lr_scheduler import MultiStepLR
 # from torch.nn.parallel import DistributedDataParallel
 
-from dataset.davis import FlownetCGData
+from dataset.davis import FlownetCGTrain
 from models.FlownetCG import FlownetCG, change_state_dict
 from cfgs import config_davis as config
 from utils.losses import L1Loss
@@ -77,10 +77,10 @@ def train(args):
     print("Using {} device".format(device))
 
     # dataset
-    train_dataset = FlownetCGData(data_root=config.DATA_ROOT, mode='train')
+    train_dataset = FlownetCGTrain(data_root=config.DATA_ROOT, mode='train')
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
 
-    valid_dataset = FlownetCGData(data_root=config.DATA_ROOT, mode='valid')
+    valid_dataset = FlownetCGTrain(data_root=config.DATA_ROOT, mode='valid')
     valid_dataloader = DataLoader(valid_dataset, batch_size=args.batch_size, shuffle=True)
     valid_len = len(valid_dataset)
 
