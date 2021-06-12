@@ -12,9 +12,6 @@ from dataset.davis import ResnetInfer
 from models.Resnet import resnet50, resnet101
 from cfgs import config
 
-output_dir = '/mnt/qinlikun/inpainting/features'
-if not os.path.exists(output_dir):
-    os.mkdir(output_dir)
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = "2,3"
 
