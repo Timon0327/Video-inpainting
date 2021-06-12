@@ -663,15 +663,18 @@ if __name__ == '__main__':
     #                       out_dir=None,
     #                       slice=config.SLICE,
     #                       N=config.N)
-    dataset = FlownetCGData(data_root='/home/cap/dataset/tiny_DAVIS', mode='valid')
-    print(len(dataset))
-    dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
+    valid_dataset = FlownetCGData(data_root=config.DATA_ROOT, mode='valid')
+    print('the size of valid dataset is ', len(valid_dataset))
+    print("1 valid epoch has ", len(valid_dataset) // config.BATCH_SIZE, ' iterations')
+    train_dataset = FlownetCGData(data_root=config.DATA_ROOT, mode='train')
+    print('the size of train dataset is ', len(train_dataset))
+    print("1 train epoch has ", len(train_dataset) // config.BATCH_SIZE, ' iterations')
     # res = dataset.__getitem__(5)
-    for i, result in enumerate(dataloader):
-        if i == 2:
-            break
-        print(i)
-        print(result)
+    # for i, result in enumerate(dataloader):
+    #     if i == 2:
+    #         break
+    #     print(i)
+    #     print(result)
     print('data loaded')
 
 

@@ -10,7 +10,7 @@
 IMG_SIZE = (640, 640)       # (1792, 1792)
 
 # dataset
-DATASET = 'davis'  # or 'ytb'
+DATASET = 'ytb'  # or 'ytb'
 
 
 DATA_ROOT = '/mnt/qinlikun/dataset/DAVIS/DAVIS-semisupervised/DAVIS-trainval'

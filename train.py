@@ -16,7 +16,7 @@ from torch.optim.lr_scheduler import MultiStepLR
 
 from dataset.davis import FlownetCGData
 from models.FlownetCG import FlownetCG, change_state_dict
-from cfgs import config
+from cfgs import config_davis as config
 from utils.losses import L1Loss
 
 
@@ -53,11 +53,11 @@ def parse_args():
 def train(args):
 
     # set path
-    log_dir = args.save_dir + '/log/'
+    log_dir = os.path.join(args.save_dir,  config.DATASET + '_log')
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
-    ckpt_dir = args.save_dir + '/ckpt/'
+    ckpt_dir = os.path.join(args.save_dir, config.DATASET + '_ckpt')
     if not os.path.exists(ckpt_dir):
         os.makedirs(ckpt_dir)
 
