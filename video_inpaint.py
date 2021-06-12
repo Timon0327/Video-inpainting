@@ -209,7 +209,7 @@ def extract_flow(args):
 
     zero_flow = cvb.read_flow(os.path.join(output_dir, flow_list[0]))
     cvb.write_flow(zero_flow*0, os.path.join(output_dir, '%05d.rflo' % flow_start_no))
-    args.flow_root = output_file    # args.flow_root='.../demo/flow'
+    args.flow_root = output_dir    # args.flow_root='.../demo/flow'
     print('Flow extraction completed!!')
 
 
