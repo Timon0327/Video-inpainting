@@ -197,6 +197,7 @@ def extract_flow(args):
             output_file = valid_data['out_file'][0]
             res_flow = flownetcg(frames, feature)
 
+            res_flow = torch.squeeze(res_flow)
             result = res_flow.permute(1, 2, 0).data.cpu().numpy()
             cvb.write_flow(result, output_file)
 
