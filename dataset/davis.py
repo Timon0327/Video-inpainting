@@ -463,7 +463,7 @@ class FlownetCGTest(Dataset):
             else:
                 self.frame_list1.append(os.path.join(self.img_dir, first + '.jpg'))
                 self.frame_list2.append(os.path.join(self.img_dir, second + '.jpg'))
-                self.feature_list.append(os.path.join(self.feature_dir, first + '.rpk'))
+                self.feature_list.append(os.path.join(self.feature_dir, first + '.pk'))
                 self.mask_list1.append(os.path.join(self.mask_dir, first + '.png'))
                 self.mask_list2.append(os.path.join(self.mask_dir, second + '.png'))
                 self.out_list.append(os.path.join(self.out_dir, first + '.flo'))
