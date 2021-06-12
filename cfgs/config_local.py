@@ -8,6 +8,10 @@
 ############### General Settings ################
 '''
 IMG_SIZE = (640, 640)       # (1792, 1792)
+
+# dataset
+DATASET = 'davis'  # or 'ytb'
+
 DATA_ROOT = '/home/cap/dataset/tiny_DAVIS'
 
 # corrupted area has size of (MASK_RATIO * height, MASK_RATIO * width)

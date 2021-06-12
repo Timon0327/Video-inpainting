@@ -20,9 +20,19 @@ video_file = '/mnt/qinlikun/dataset/DAVIS/DAVIS-semisupervised/DAVIS-trainval/Im
 if not os.path.exists(save_dir):
     os.mkdir(save_dir)
 
-with open(video_file, 'r') as f:
-    tmp = f.readlines()
-    video_list = [x[:-1] for x in tmp]
+if config.DATASET == 'davis':
+    with open(video_file, 'r') as f:
+        tmp = f.readlines()
+        video_list = [x[:-1] for x in tmp]
+else:
+    video_list = os.listdir(data_dir)
+    try:
+        t = video_list.index('.DS_Store')
+        del video_list[t]
+    except ValueError:
+        pass
+    video_list.sort()
+
 
 for vid in video_list:
     os.mkdir(os.path.join(save_dir, vid))

@@ -8,6 +8,11 @@
 ############### General Settings ################
 '''
 IMG_SIZE = (640, 640)       # (1792, 1792)
+
+# dataset
+DATASET = 'davis'  # or 'ytb'
+
+
 DATA_ROOT = '/mnt/qinlikun/dataset/DAVIS/DAVIS-semisupervised/DAVIS-trainval'
 
 # corrupted area has size of (MASK_RATIO * height, MASK_RATIO * width)
