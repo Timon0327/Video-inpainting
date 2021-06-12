@@ -207,8 +207,8 @@ def extract_flow(args):
     flow_list = [x for x in os.listdir(output_dir) if '.flo' in x]
     flow_start_no = min([int(x[:5]) for x in flow_list])
 
-    zero_flow = cvb.read_flow(os.path.join(output_file, flow_list[0]))
-    cvb.write_flow(zero_flow*0, os.path.join(output_file, '%05d.rflo' % flow_start_no))
+    zero_flow = cvb.read_flow(os.path.join(output_dir, flow_list[0]))
+    cvb.write_flow(zero_flow*0, os.path.join(output_dir, '%05d.rflo' % flow_start_no))
     args.flow_root = output_file    # args.flow_root='.../demo/flow'
     print('Flow extraction completed!!')
 
