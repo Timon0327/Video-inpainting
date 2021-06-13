@@ -30,7 +30,8 @@ from torch.utils.data.dataset import Dataset
 from torch.utils.data import DataLoader
 from torchvision.transforms import ToTensor
 import cv2 as cv
-import numpy as np
+import sys
+sys.path.append('..')
 import os
 import pickle
 import cvbase as cvb

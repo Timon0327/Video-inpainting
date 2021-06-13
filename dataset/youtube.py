@@ -27,6 +27,8 @@ import numpy as np
 import os
 import pickle
 import cvbase as cvb
+import sys
+sys.path.append('..')
 from utils.image import apply_mask_resize
 from cfgs import config_ytb as config
 
