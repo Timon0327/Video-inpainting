@@ -16,7 +16,7 @@ from torch.optim.lr_scheduler import MultiStepLR
 
 from dataset.davis import FlownetCGTrain
 from models.FlownetCG import FlownetCG, change_state_dict
-from cfgs import config_davis as config
+from cfgs import config_ytb as config
 from utils.losses import L1Loss
 
 
