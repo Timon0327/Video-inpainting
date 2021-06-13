@@ -450,10 +450,11 @@ class FlownetCGTest(Dataset):
 
         # generate text file
         for i in range(feature_num):
-            first = features[i].split('.')[0]
-            id = images.index(first + '.jpg')
-            second = images[id + 1].split('.')[0]
+
             if 'rpk' in features[i]:
+                second = features[i].split('.')[0]
+                id = images.index(second + '.jpg')
+                first = images[id - 1].split('.')[0]
                 self.frame_list1.append(os.path.join(self.img_dir, second + '.jpg'))
                 self.frame_list2.append(os.path.join(self.img_dir, first + '.jpg'))
                 self.feature_list.append(os.path.join(self.feature_dir, second + '.rpk'))
@@ -461,6 +462,9 @@ class FlownetCGTest(Dataset):
                 self.mask_list2.append(os.path.join(self.mask_dir, first + '.png'))
                 self.out_list.append(os.path.join(self.out_dir, second + '.rflo'))
             else:
+                first = features[i].split('.')[0]
+                id = images.index(first + '.jpg')
+                second = images[id + 1].split('.')[0]
                 self.frame_list1.append(os.path.join(self.img_dir, first + '.jpg'))
                 self.frame_list2.append(os.path.join(self.img_dir, second + '.jpg'))
                 self.feature_list.append(os.path.join(self.feature_dir, first + '.pk'))
@@ -742,9 +746,10 @@ if __name__ == '__main__':
     #                       out_dir=None,
     #                       slice=config.SLICE,
     #                       N=config.N)
-    dataset = ResnetInferTest(data_root='/home/cap/dataset/demo',
-                          slice=config.SLICE,
-                          N=config.N)
+    # dataset = ResnetInferTest(data_root='/home/cap/dataset/demo',
+    #                       slice=config.SLICE,
+    #                       N=config.N)
+    dataset = FlownetCGTest(data_root='/home/cap/dataset/demo')
     valid_dataset = FlownetCGTrain(data_root=config.DATA_ROOT, mode='valid')
     print('the size of valid dataset is ', len(valid_dataset))
     print("1 valid epoch has ", len(valid_dataset) // config.BATCH_SIZE, ' iterations')
