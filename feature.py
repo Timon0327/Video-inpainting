@@ -24,14 +24,13 @@ def extract_features(backbone, dataset='davis', batch_size=1):
     :return:
     '''
     # load data
-    if dataset == 'davis':
-        feature_dataset = ResnetInfer(data_root=config.DATA_ROOT,
+    feature_dataset = ResnetInfer(data_root=config.DATA_ROOT,
                                   mask_dir=None,
                                   out_dir=None,
                                   slice=config.SLICE,
                                   N=config.N
                                   )
-        dataloader = DataLoader(feature_dataset, batch_size=batch_size)
+    dataloader = DataLoader(feature_dataset, batch_size=batch_size)
 
     # create model
     device = "cuda" if torch.cuda.is_available() else "cpu"
