@@ -7,8 +7,8 @@ import random
 import shutil
 
 percentage = 0.5
-data_dir = '/home/cap/dataset/tiny_ytb'
-backup_dir = '/home/cap/dataset/backup'
+data_dir = '/mnt/qinlikun/dataset/youtube/train'
+backup_dir = '/mnt/qinlikun/dataset/youtube/backup'
 
 video_names = os.listdir(os.path.join(data_dir, 'JPEGImages'))
 video_num = len(video_names)
