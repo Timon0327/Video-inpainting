@@ -246,7 +246,7 @@ def psnr_and_ssim(args):
         pred = cv.imread(os.path.join(result_dir, one))
 
         psnr = peak_signal_noise_ratio(image_true=gt, image_test=pred.astype(np.uint8))
-        ssim = structural_similarity(gt, pred.astype(np.uint8))
+        ssim = structural_similarity(gt, pred.astype(np.uint8), multichannel=True)
 
         print('image ', one)
         print('psnr: ', psnr, '      ssim: ', ssim)
