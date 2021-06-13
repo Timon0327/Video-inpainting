@@ -8,9 +8,9 @@ import os
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
-from dataset.davis import ResnetInfer
+from dataset.youtube import ResnetInfer
 from models.Resnet import resnet50, resnet101
-from cfgs import config
+from cfgs import config_ytb as config
 
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = "2,3"
@@ -80,6 +80,6 @@ def extract_features(backbone, dataset='davis', batch_size=1):
 
 
 if __name__ == '__main__':
-    extract_features(backbone='resnet50')
+    extract_features(backbone='resnet50', dataset='youtube')
 
 
