@@ -64,10 +64,10 @@ class FlownetInfer(Dataset):
 
         # set path
         self.img_dir = os.path.join(data_root, 'JPEGImages')
-        if not mask_dir:
-            self.mask_dir = os.path.join(data_root, 'masks')
-        else:
-            self.mask_dir = mask_dir
+        # if not mask_dir:
+        #     self.mask_dir = os.path.join(data_root, 'masks')
+        # else:
+        #     self.mask_dir = mask_dir
 
         # record video names
         self.video_list = os.listdir(self.img_dir)
@@ -192,6 +192,12 @@ class FlownetCGData(Dataset):
         else:
             self.mask_dir = mask_dir
         assert os.path.exists(self.mask_dir)
+
+        self.mask_type = config.MASK_TYPE
+        if self.mask_type == 'mid':
+            self.mask = cv.imread(os.path.join(self.mask_dir, 'mask.png'))[:, :, 2]
+        else:
+            self.mask = None
 
         if not feature_dir:
             self.feature_dir = os.path.join(data_root, 'feature')
@@ -327,8 +333,13 @@ class FlownetCGData(Dataset):
         frame1 = cv.imread(self.frame_list1[idx])
         frame2 = cv.imread(self.frame_list2[idx])
 
-        mask1 = cv.imread(self.mask_list1[idx])[:, :, 2]
-        mask2 = cv.imread(self.mask_list2[idx])[:, :, 2]
+        if self.mask_type == 'mid':
+            assert self.mask != None
+            mask1 = self.mask
+            mask2 = self.mask
+        else:
+            mask1 = cv.imread(self.mask_list1[idx])[:, :, 2]
+            mask2 = cv.imread(self.mask_list2[idx])[:, :, 2]
 
         img1 = apply_mask_resize(frame1, size=config.IMG_SIZE, slice=0, mask=mask1)
         img2 = apply_mask_resize(frame2, size=config.IMG_SIZE, slice=0, mask=mask2)
@@ -399,6 +410,12 @@ class ResnetInfer(Dataset):
         else:
             self.mask_dir = os.path.join(data_root, 'masks')
         assert os.path.exists(self.mask_dir)
+
+        self.mask_type = config.MASK_TYPE
+        if self.mask_type == 'mid':
+            self.mask = cv.imread(os.path.join(self.mask_dir, 'mask.png'))[:, :, 2]
+        else:
+            self.mask = None
 
         if out_dir:
             self.out_dir = out_dir
@@ -485,7 +502,11 @@ class ResnetInfer(Dataset):
 
         for one in self.frames[idx]:
             frame = cv.imread(os.path.join(self.img_dir, one))
-            mask = cv.imread(os.path.join(self.mask_dir, one[:-4] + '.png'))[:, :, 2]
+            if self.mask_type == 'mid':
+                assert self.mask != None
+                mask = self.mask
+            else:
+                mask = cv.imread(os.path.join(self.mask_dir, one[:-4] + '.png'))[:, :, 2]
 
             img = apply_mask_resize(frame, size=config.IMG_SIZE, slice=self.slice, mask=mask)
             frames.append(img)
