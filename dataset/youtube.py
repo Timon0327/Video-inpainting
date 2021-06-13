@@ -150,7 +150,7 @@ class FlownetInfer(Dataset):
         return result
 
 
-class FlownetCGData(Dataset):
+class FlownetCGTrain(Dataset):
     '''
     dataset for FlowNet2
     '''
@@ -372,6 +372,138 @@ class FlownetCGData(Dataset):
         return result
 
 
+class FlownetCGTest(Dataset):
+    '''
+    dataset for FlowNet2
+    '''
+
+    def __init__(self, data_root, out_dir=None, mask_dir=None, feature_dir=None):
+        '''
+        initialization
+        can be used for both davis and ytb
+        data_root structure:
+            |-- dataroot
+                |-- frames
+                |-- masks
+                |-- feature (possibly)
+                |-- flow (possibly)
+                |-- gt (possibly)
+        modes:
+            test -- for testing, get 2 frames, features, and output filename
+        :param data_root: the directory of dataroot
+        :param out_dir: the directory to store output flow files
+        :param mask_dir: the directory storing masks. If none, use self-generated masks then
+        :param feature_dir: the directory storing features. If none, use self-generated features then
+        '''
+        self.data_root = data_root
+
+        if not out_dir:
+            self.out_dir = os.path.join(data_root, 'flow')
+        else:
+            self.out_dir = out_dir
+
+        if not os.path.exists(self.out_dir):
+            os.mkdir(self.out_dir)
+
+        # set path
+        self.img_dir = os.path.join(data_root, 'frames')  # Full-Resolution
+
+        if not mask_dir:
+            self.mask_dir = os.path.join(data_root, 'masks')
+        else:
+            self.mask_dir = mask_dir
+        assert os.path.exists(self.mask_dir)
+
+        self.mask_type = config.MASK_TYPE
+        if self.mask_type == 'mid':
+            self.mask = cv.imread(os.path.join(self.mask_dir, 'mask.png'))[:, :, 2]
+        else:
+            self.mask = None
+
+        if not feature_dir:
+            self.feature_dir = os.path.join(data_root, 'feature')
+        else:
+            self.feature_dir = feature_dir
+        assert os.path.exists(self.feature_dir)
+
+        self.video_list = os.listdir(self.img_dir)
+
+        self.frame_list1 = []
+        self.frame_list2 = []
+        self.feature_list = []
+        self.mask_list1 = []
+        self.mask_list2 = []
+        self.out_list = []
+
+        features = os.listdir(self.feature_dir)
+        features.sort()
+        feature_num = len(features)
+
+        images = os.listdir(self.img_dir)
+        images.sort()
+
+        # generate text file
+        for i in range(feature_num):
+
+            if 'rpk' in features[i]:
+                second = features[i].split('.')[0]
+                id = images.index(second + '.jpg')
+                first = images[id - 1].split('.')[0]
+                self.frame_list1.append(os.path.join(self.img_dir, second + '.jpg'))
+                self.frame_list2.append(os.path.join(self.img_dir, first + '.jpg'))
+                self.feature_list.append(os.path.join(self.feature_dir, second + '.rpk'))
+                self.mask_list1.append(os.path.join(self.mask_dir, second + '.png'))
+                self.mask_list2.append(os.path.join(self.mask_dir, first + '.png'))
+                self.out_list.append(os.path.join(self.out_dir, second + '.rflo'))
+            else:
+                first = features[i].split('.')[0]
+                id = images.index(first + '.jpg')
+                second = images[id + 1].split('.')[0]
+                self.frame_list1.append(os.path.join(self.img_dir, first + '.jpg'))
+                self.frame_list2.append(os.path.join(self.img_dir, second + '.jpg'))
+                self.feature_list.append(os.path.join(self.feature_dir, first + '.pk'))
+                self.mask_list1.append(os.path.join(self.mask_dir, first + '.png'))
+                self.mask_list2.append(os.path.join(self.mask_dir, second + '.png'))
+                self.out_list.append(os.path.join(self.out_dir, first + '.flo'))
+
+    def __len__(self):
+        return len(self.frame_list1)
+
+    def __getitem__(self, idx):
+        '''
+        get 2 consecutive frames and the filename of output flow file
+        :param idx:
+        :return:
+        '''
+
+        frame1 = cv.imread(self.frame_list1[idx])
+        frame2 = cv.imread(self.frame_list2[idx])
+
+        if self.mask_type == 'mid':
+            # assert self.mask != None
+            mask1 = self.mask
+            mask2 = self.mask
+        else:
+            mask1 = cv.imread(self.mask_list1[idx])[:, :, 2]
+            mask2 = cv.imread(self.mask_list2[idx])[:, :, 2]
+
+        img1 = apply_mask_resize(frame1, size=config.IMG_SIZE, slice=0, mask=mask1)
+        img2 = apply_mask_resize(frame2, size=config.IMG_SIZE, slice=0, mask=mask2)
+
+        imgs = torch.cat([img1, img2], dim=0)
+
+        with open(os.path.join(self.feature_dir, self.feature_list[idx]), 'rb') as f:
+            feature = pickle.load(f)
+            feature = torch.cat(feature, dim=0)
+            # feature.requires_grad_(False)
+
+        result = {'frames': imgs,
+                  'feature': feature,
+                  'out_file': self.out_list[idx]}
+
+        return result
+
+
 class ResnetInfer(Dataset):
     '''
     dataset for flow extraction
@@ -497,6 +629,113 @@ class ResnetInfer(Dataset):
     def __getitem__(self, idx):
         '''
         get 2N+1 frames in a list, and the name of the output pk file
+        :param idx:
+        :return:
+        '''
+        frames = []
+
+        for one in self.frames[idx]:
+            frame = cv.imread(os.path.join(self.img_dir, one))
+            if self.mask_type == 'mid':
+                # assert self.mask != None
+                mask = self.mask
+            else:
+                mask = cv.imread(os.path.join(self.mask_dir, one[:-4] + '.png'))[:, :, 2]
+
+            img = apply_mask_resize(frame, size=config.IMG_SIZE, slice=self.slice, mask=mask)
+            frames.append(img)
+
+        result = {'frames': frames,
+                  'out_file': os.path.join(self.out_dir, self.out_files[idx])}
+
+        return result
+
+
+class ResnetInferTest(Dataset):
+    '''
+    dataset for flow extraction
+    '''
+    def __init__(self, data_root, slice, N, mask_dir=None, out_dir=None):
+        '''
+        initialize dataset
+        data_root structure:
+            |-- dataroot
+                |-- frame
+                |-- masks
+                |-- feature (possibly)
+                |-- flow (possibly)
+        :param data_root: the directory of data_root
+        :param mask_dir: the directory of masks. if None, then use self-generated masks
+        :param out_dir: the directory to store features
+        :param slice: how many patches each frame is divided into in each direction, int
+        :param div: how many batch are needed to process one frame (to save CUDA memory), int  (abandoned)
+        :param N: get 2N frames in total, N frames before, N frames after. int
+
+        notice: the number of nodes in GCN is actually (2N) * slice * slice
+        '''
+        self.slice = slice
+        self.N = N
+        all_intervals = [0, 1, -1, 2, -2, 3, -4, 5, -7, 8]
+
+        # select frames with different offsets to form the nodes
+        self.intervals = all_intervals[:2 * N]
+        self.intervals.sort()
+
+        self.data_root = data_root
+        self.img_dir = os.path.join(data_root, 'frames')    # Full-Resolution
+
+        if mask_dir:
+            self.mask_dir = mask_dir
+        else:
+            self.mask_dir = os.path.join(data_root, 'masks')
+
+        self.mask_type = config.MASK_TYPE
+        if self.mask_type == 'mid':
+            self.mask = cv.imread(os.path.join(self.mask_dir, 'mask.png'))[:, :, 2]
+        else:
+            self.mask = None
+
+        if out_dir:
+            self.out_dir = out_dir
+        else:
+            self.out_dir = os.path.join(data_root, 'feature')
+
+        if not os.path.exists(self.out_dir):
+            os.mkdir(self.out_dir)
+
+        self.frames = []
+        self.out_files = []
+        margin_left = self.intervals[0]
+        margin_right = self.intervals[-1]
+
+        imgs = os.listdir(self.img_dir)
+        try:
+            t = imgs.index('.DS_Store')
+            del imgs[t]
+        except ValueError:
+            pass
+        imgs.sort()
+        img_num = len(imgs)
+
+        for i in range(img_num):
+            if i + margin_right < img_num and i + margin_left >= 0:
+                tmp_frame = []
+                for offset in self.intervals:
+                    tmp_frame.append(imgs[i + offset])
+                self.frames.append(tmp_frame)
+                self.out_files.append(imgs[i][:-4] + '.pk')
+                tmp_frame = []
+                for offset in self.intervals[::-1]:
+                    tmp_frame.append(imgs[i + offset])
+                self.frames.append(tmp_frame)
+                self.out_files.append(imgs[i + 1][:-4] + '.rpk')
+
+    def __len__(self):
+        return len(self.out_files)
+
+    def __getitem__(self, idx):
+        '''
+        get 2N frames in a list, and the name of the output pk file
         :param idx:
         :return:
         '''
@@ -668,10 +907,10 @@ if __name__ == '__main__':
     #                       out_dir=None,
     #                       slice=config.SLICE,
     #                       N=config.N)
-    valid_dataset = FlownetCGData(data_root=config.VALID_ROOT, mode='valid')
+    valid_dataset = FlownetCGTrain(data_root=config.VALID_ROOT, mode='valid')
     print('the size of valid dataset is ', len(valid_dataset))
     print("1 valid epoch has ", len(valid_dataset) // config.BATCH_SIZE, ' iterations')
-    train_dataset = FlownetCGData(data_root=config.DATA_ROOT, mode='train')
+    train_dataset = FlownetCGTrain(data_root=config.DATA_ROOT, mode='train')
     print('the size of train dataset is ', len(train_dataset))
     print("1 train epoch has ", len(train_dataset) // config.BATCH_SIZE, ' iterations')
     # res = dataset.__getitem__(5)
