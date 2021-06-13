@@ -10,10 +10,10 @@ sys.path.append('..')
 from utils.image import rand_bbox_mask, mid_bbox_mask
 from cfgs import config_ytb as config
 
-data_dir = '/mnt/qinlikun/dataset/youtube/train/JPEGImages'
+data_dir = '/mnt/qinlikun/dataset/youtube/valid/JPEGImages'
 # .../DAVIS*/JPEGImages/Full-Resolution or .../DAVIS*/JPEGImages/480p
 
-save_dir = '/mnt/qinlikun/dataset/youtube/train/masks'
+save_dir = '/mnt/qinlikun/dataset/youtube/valid/masks'
 # '/mnt/qinlikun/dataset/DAVIS/DAVIS-semisupervised/DAVIS-trainval/masks'
 
 video_file = '/mnt/qinlikun/dataset/DAVIS/DAVIS-semisupervised/DAVIS-trainval/ImageSets/2017/train.txt'
