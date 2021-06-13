@@ -242,7 +242,7 @@ def psnr_and_ssim(args):
     for one in result_list:
         name = one.split('.')[0]
         gt = cv.imread(os.path.join(gt_dir, name + '.jpg'))
-        gt = cv.resize(gt, args.IMG_SIZE)
+        gt = cv.resize(gt, args.img_size)
         pred = cv.imread(os.path.join(result_dir, one))
 
         psnr = peak_signal_noise_ratio(image_true=gt, image_test=pred.astype(np.uint8))
