@@ -28,7 +28,7 @@ import os
 import pickle
 import cvbase as cvb
 from utils.image import apply_mask_resize
-from cfgs import config
+from cfgs import config_ytb as config
 
 totensor = ToTensor()
 
@@ -645,7 +645,7 @@ if __name__ == '__main__':
     #                       out_dir=None,
     #                       slice=config.SLICE,
     #                       N=config.N)
-    valid_dataset = FlownetCGData(data_root=config.DATA_ROOT, mode='valid')
+    valid_dataset = FlownetCGData(data_root=config.VALID_ROOT, mode='valid')
     print('the size of valid dataset is ', len(valid_dataset))
     print("1 valid epoch has ", len(valid_dataset) // config.BATCH_SIZE, ' iterations')
     train_dataset = FlownetCGData(data_root=config.DATA_ROOT, mode='train')

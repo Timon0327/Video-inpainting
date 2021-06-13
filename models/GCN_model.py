@@ -81,7 +81,9 @@ class GCN_3(nn.Module):
         self.conv1x1 = nn.Conv2d(in_channels=2 * self.frames, out_channels=1, kernel_size=1, stride=1)
         # for the case where slice is 2 and height of img is 640
         self.upsample = nn.Upsample(scale_factor=2., mode='bilinear')
-        self.deconv = nn.ConvTranspose2d(in_channels=2048, out_channels=1024, kernel_size=3, padding=1, stride=3)
+        self.deconv1 = nn.ConvTranspose2d(in_channels=2048, out_channels=1024, kernel_size=3, padding=1, stride=3)
+        self.conv3x3 = nn.Conv2d(in_channels=1024, out_channels=1024, kernel_size=3, stride=1, padding=1)
+        self.deconv2 = nn.ConvTranspose2d(in_channels=1024, out_channels=256, kernel_size=6, padding=1, stride=4)
         self.leaky_relu = nn.LeakyReLU(negative_slope=0.1, inplace=True)
 
         self.laplacian_adj = None
@@ -161,7 +163,12 @@ class GCN_3(nn.Module):
 
         # for the case where slice is 2 and height of img is 640
         out = self.upsample(out)       # [N, 2048, 4, 4]
-        out = self.deconv(out)         # [N, 1024, 10, 10]
+        out = self.deconv1(out)         # [N, 1024, 10, 10]
+        out = self.leaky_relu(out)      # [N, 1024, 10, 10]
+        out = self.conv3x3(out)         # [N ,1024, 10, 10]
+        out = self.leaky_relu(out)      # [N ,1024, 10, 10]
+        out = self.deconv2(out)         # [N, 256, 40, 40]
+        out = self.leaky_relu(out)      # [N ,256, 40, 40]
 
         # out = torch.unsqueeze(out, dim=0)
         return out

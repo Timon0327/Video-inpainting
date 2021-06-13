@@ -15,6 +15,9 @@ DATASET = 'davis'  # or 'ytb'
 # directory of test frames
 TEST_ROOT = '/home/cap/dataset/demo'
 
+# directory of valid frames
+VALID_ROOT = '/mnt/qinlikun/dataset/DAVIS/DAVIS-semisupervised/DAVIS-trainval'
+
 # corrupted area has size of (MASK_RATIO * height, MASK_RATIO * width)
 MASK_RATIO = 0.25
 

@@ -750,7 +750,7 @@ if __name__ == '__main__':
     #                       slice=config.SLICE,
     #                       N=config.N)
     dataset = FlownetCGTest(data_root='/home/cap/dataset/demo')
-    valid_dataset = FlownetCGTrain(data_root=config.DATA_ROOT, mode='valid')
+    valid_dataset = FlownetCGTrain(data_root=config.VALID_ROOT, mode='valid')
     print('the size of valid dataset is ', len(valid_dataset))
     print("1 valid epoch has ", len(valid_dataset) // config.BATCH_SIZE, ' iterations')
     train_dataset = FlownetCGTrain(data_root=config.DATA_ROOT, mode='train')

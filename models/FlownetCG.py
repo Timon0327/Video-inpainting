@@ -18,7 +18,7 @@ import torch.nn as nn
 from torch.optim.lr_scheduler import MultiStepLR
 import argparse
 from torch.utils.data import DataLoader
-from dataset.davis import FlownetCGTrain
+from dataset.davis import FlownetCGTest
 
 
 class FlownetCG(nn.Module):
@@ -54,6 +54,7 @@ class FlownetCG(nn.Module):
         self.conv3_1 = conv(self.batchNorm, 473, 256)
         self.conv4 = conv(self.batchNorm, 256, 512, stride=2)
         self.conv4_1 = conv(self.batchNorm, 512, 512)
+        self.conv1x1 = conv(self.batchNorm, 768, 512, kernel_size=1, stride=1)
         self.conv5 = conv(self.batchNorm, 512, 512, stride=2)
         self.conv5_1 = conv(self.batchNorm, 512, 512)
         self.conv6 = conv(self.batchNorm, 512, 1024, stride=2)
@@ -61,18 +62,18 @@ class FlownetCG(nn.Module):
 
         # self.fusion_conv = conv(self.batchNorm, in_planes=2048, out_planes=1024, kernel_size=1, stride=1)
 
-        self.deconv5 = deconv(2048, 1024)
-        self.deconv4 = deconv(1538, 768)
-        self.deconv3 = deconv(1282, 512)
-        self.deconv2 = deconv(770, 256)
-        self.deconv1 = deconv(386, 128)
+        self.deconv5 = deconv(1024, 512)
+        self.deconv4 = deconv(1026, 256)
+        self.deconv3 = deconv(770, 128)
+        self.deconv2 = deconv(386, 64)
+        self.deconv1 = deconv(194, 32)
 
-        self.predict_flow6 = predict_flow(2048)
-        self.predict_flow5 = predict_flow(1538)
-        self.predict_flow4 = predict_flow(1282)
-        self.predict_flow3 = predict_flow(770)
-        self.predict_flow2 = predict_flow(386)
-        self.predict_flow1 = predict_flow(194)
+        self.predict_flow6 = predict_flow(1024)
+        self.predict_flow5 = predict_flow(1026)
+        self.predict_flow4 = predict_flow(770)
+        self.predict_flow3 = predict_flow(386)
+        self.predict_flow2 = predict_flow(194)
+        self.predict_flow1 = predict_flow(98)
 
         self.upsampled_flow6_to_5 = nn.ConvTranspose2d(2, 2, 4, 2, 1, bias=True)
         self.upsampled_flow5_to_4 = nn.ConvTranspose2d(2, 2, 4, 2, 1, bias=True)
@@ -131,45 +132,46 @@ class FlownetCG(nn.Module):
 
         out_conv4 = self.conv4_1(self.conv4(out_conv3_1))  # [N, 512, 1/16 H, 1/16 W]
 
-        out_conv5 = self.conv5_1(self.conv5(out_conv4))  # [N, 512, 1/32 H, 1/32 W]
+        # for the case where H = 640, slice = 2
+        in_fusion = torch.cat([out_conv4, out_gcn], dim=1)  # [N, 768, 1/16 H, 1/16 W]
+        out_fusion = self.conv1x1(in_fusion)  # [N, 512, 1/16 H, 1/16 W]
+
+        out_conv5 = self.conv5_1(self.conv5(out_fusion))  # [N, 512, 1/32 H, 1/32 W]
         out_conv6 = self.conv6_1(self.conv6(out_conv5))  # [N, 1024, 1/64 H, 1/64 W]
 
-        # for the case where H = 640, slice = 2
-        out_fusion = torch.cat([out_conv6, out_gcn], dim=1)  # [N, 2048, 10, 10]
+        # out_fusion = torch.cat([out_conv6, out_gcn], dim=1)  # [N, 2048, 10, 10]
 
-        flow6 = self.predict_flow6(out_fusion)  # [N, 2, 1/64 H, 1/64 W]
+        flow6 = self.predict_flow6(out_conv6)  # [N, 2, 1/64 H, 1/64 W]
         flow6_up = self.upsampled_flow6_to_5(flow6)  # [N, 2, 1/32 H, 1/32 W]
-        out_deconv5 = self.deconv5(out_fusion)  # [N, 1024, 1/32 H, 1/32 W]
+        out_deconv5 = self.deconv5(out_conv6)  # [N, 512, 1/32 H, 1/32 W]
 
-        concat5 = torch.cat((out_conv5, out_deconv5, flow6_up), 1)  # [N, 1538, 1/32 H, 1/32 W]
+        concat5 = torch.cat((out_conv5, out_deconv5, flow6_up), 1)  # [N, 1026, 1/32 H, 1/32 W]
 
         flow5 = self.predict_flow5(concat5)  # [N, 2, 1/32 H, 1/32 W]
         flow5_up = self.upsampled_flow5_to_4(flow5)  # [N, 2, 1/16 H, 1/16 W]
-        out_deconv4 = self.deconv4(concat5)  # [N, 768, 1/16 H, 1/16 W]
-        concat4 = torch.cat((out_conv4, out_deconv4, flow5_up), 1)  # [N, 1282, 1/16 H, 1/16 W]
+        out_deconv4 = self.deconv4(concat5)  # [N, 256, 1/16 H, 1/16 W]
+        concat4 = torch.cat((out_conv4, out_deconv4, flow5_up), 1)  # [N, 770, 1/16 H, 1/16 W]
 
         flow4 = self.predict_flow4(concat4)  # [N, 2, 1/16 H, 1/16 W]
         flow4_up = self.upsampled_flow4_to_3(flow4)  # [N, 2, 1/8 H, 1/8 W]
-        out_deconv3 = self.deconv3(concat4)  # [N, 512, 1/8 H, 1/8 W]
-        concat3 = torch.cat((out_conv3_1, out_deconv3, flow4_up), 1)  # [N, 770, 1/8 H, 1/8 W]
+        out_deconv3 = self.deconv3(concat4)  # [N, 128, 1/8 H, 1/8 W]
+        concat3 = torch.cat((out_conv3_1, out_deconv3, flow4_up), 1)  # [N, 386, 1/8 H, 1/8 W]
 
         flow3 = self.predict_flow3(concat3)  # [N, 2, 1/8 H, 1/8 W]
         flow3_up = self.upsampled_flow3_to_2(flow3)  # [N, 2, 1/4 H, 1/4 W]
-        out_deconv2 = self.deconv2(concat3)  # [N, 256, 1/4 H, 1/4 W]
-        concat2 = torch.cat((out_conv2a, out_deconv2, flow3_up), 1)  # [N, 386, 1/4 H, 1/4 W]
+        out_deconv2 = self.deconv2(concat3)  # [N, 64, 1/4 H, 1/4 W]
+        concat2 = torch.cat((out_conv2a, out_deconv2, flow3_up), 1)  # [N, 194, 1/4 H, 1/4 W]
 
         flow2 = self.predict_flow2(concat2)  # [N, 2, 1/4 H, 1/4 W]
         flow2_up = self.upsampled_flow2_to_1(flow2)  # [N, 2, 1/2 H, 1/2 W]
-        out_deconv1 = self.deconv1(concat2)  # [N, 128, 1/2 H, 1/2 W]
-        concat1 = torch.cat((out_conv1a, out_deconv1, flow2_up), 1)  # [N, 194, 1/2 H, 1/2 W]
+        out_deconv1 = self.deconv1(concat2)  # [N, 32, 1/2 H, 1/2 W]
+        concat1 = torch.cat((out_conv1a, out_deconv1, flow2_up), 1)  # [N, 98, 1/2 H, 1/2 W]
 
-        flow1 = self.predict_flow1(concat1)
-        flow1_up = self.upsampled_flow2_to_1(flow1)
+        flow1 = self.predict_flow1(concat1)  # [N, 2, 1/2 H, 1/2 W]
+        flow1_up = self.upsampled_flow2_to_1(flow1)  # [N, 2, H, W]
 
-        if self.training:
-            return flow1_up, flow1, flow2, flow3, flow4, flow5, flow6, out_conv3_1, out_conv4, out_conv5, out_conv6
-        else:
-            return flow1_up
+        return flow1_up, flow6
+
 
     def fix_front(self):
         '''
@@ -180,11 +182,11 @@ class FlownetCG(nn.Module):
         for i, m in enumerate(self.modules()):
             # print(m)
             module_list.append(m)
-            if i in range(7, 42):
+            if i in range(21, 44):
                 m.eval()
                 for item in m.parameters(recurse=False):
                     item.requires_grad_(False)
-        # print('all!')
+        print('all!')
 
     def update_gcn_device(self, device):
         self.gcn.to(device)
@@ -227,16 +229,16 @@ if __name__ == '__main__':
 
 
 
-    optimizer = torch.optim.SGD(flownetcg.parameters(), lr=0.001,
-                                momentum=0.9, weight_decay=0.00004)
-    scheduler = MultiStepLR(optimizer, milestones=[3, 5])
+    # optimizer = torch.optim.SGD(flownetcg.parameters(), lr=0.001,
+    #                             momentum=0.9, weight_decay=0.00004)
+    # scheduler = MultiStepLR(optimizer, milestones=[3, 5])
+    #
+    # for i in range(10):
+    #     print(scheduler.get_lr())
+    #     scheduler.step()
 
-    for i in range(10):
-        print(scheduler.get_lr())
-        scheduler.step()
-
-    dataset = FlownetCGTrain(data_root=config.DATA_ROOT, mode='train')
-    dataloader = DataLoader(dataset, batch_size=config.BATCH_SIZE)
+    dataset = FlownetCGTest(data_root='/home/cap/dataset/demo')
+    dataloader = DataLoader(dataset, batch_size=1)
 
     for batch, data in enumerate(dataloader):
         print(batch)

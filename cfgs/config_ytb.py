@@ -13,7 +13,10 @@ IMG_SIZE = (640, 640)       # (1792, 1792)
 DATASET = 'ytb'  # or 'ytb'
 
 # directory of test frames
-TEST_ROOT = '/home/cap/dataset/demo'
+TEST_ROOT = '/mnt/qinlikun/dataset/test'
+
+# directory of valid frames
+VALID_ROOT = '/mnt/qinlikun/dataset/youtube/valid'
 
 # corrupted area has size of (MASK_RATIO * height, MASK_RATIO * width)
 MASK_RATIO = 0.25
@@ -41,7 +44,7 @@ RESNET101_WEIGHT = '/mnt/qinlikun/inpainting/resnet/resnet101-5d3b4d8f.pth '
 ############### Training Setting ################
 '''
 
-DATA_ROOT = '/mnt/qinlikun/dataset/DAVIS/DAVIS-semisupervised/DAVIS-trainval'
+DATA_ROOT = '/mnt/qinlikun/dataset/youtube/train'
 
 SAVE_DIR = '/mnt/qinlikun/inpainting'
 

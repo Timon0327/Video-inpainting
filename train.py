@@ -80,7 +80,7 @@ def train(args):
     train_dataset = FlownetCGTrain(data_root=config.DATA_ROOT, mode='train')
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
 
-    valid_dataset = FlownetCGTrain(data_root=config.DATA_ROOT, mode='valid')
+    valid_dataset = FlownetCGTrain(data_root=config.VALID_ROOT, mode='valid')
     valid_dataloader = DataLoader(valid_dataset, batch_size=args.batch_size, shuffle=True)
     valid_len = len(valid_dataset)
 
