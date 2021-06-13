@@ -64,7 +64,7 @@ def propagation(args, frame_inapint_model=None):
         os.makedirs(output_root)
 
     frame_name_list = sorted(os.listdir(img_root))
-    frames_num = len(frame_name_list)
+    frames_num = len(frame_name_list) - 9
     frame_inpaint_seq = np.ones(frames_num-1)
     masked_frame_num = np.sum((frame_inpaint_seq > 0).astype(np.int))
     print(masked_frame_num, 'frames need to be inpainted.')
