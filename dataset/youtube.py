@@ -336,7 +336,7 @@ class FlownetCGData(Dataset):
         frame2 = cv.imread(self.frame_list2[idx])
 
         if self.mask_type == 'mid':
-            assert self.mask != None
+            # assert self.mask != None
             mask1 = self.mask
             mask2 = self.mask
         else:
@@ -505,7 +505,7 @@ class ResnetInfer(Dataset):
         for one in self.frames[idx]:
             frame = cv.imread(os.path.join(self.img_dir, one))
             if self.mask_type == 'mid':
-                assert self.mask != None
+                # assert self.mask != None
                 mask = self.mask
             else:
                 mask = cv.imread(os.path.join(self.mask_dir, one[:-4] + '.png'))[:, :, 2]
