@@ -80,7 +80,7 @@ class FlownetInfer(Dataset):
             pass
         self.video_list.sort()
 
-        self.file = os.path.join(data_root, 'ImageSets', '2017', 'gt.txt')
+        self.file = os.path.join(data_root, 'gt.txt')
 
         if not os.path.exists(self.file):
             with open(self.file, 'w') as f:
