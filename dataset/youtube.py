@@ -894,10 +894,10 @@ if __name__ == '__main__':
     #                       out_dir=None,
     #                       slice=config.SLICE,
     #                       N=config.N)
-    valid_dataset = FlownetCGTrain(data_root='/home/cap/dataset/tiny_ytb', mode='valid')
+    valid_dataset = FlownetCGTrain(data_root=config.VALID_ROOT, mode='valid')
     print('the size of valid dataset is ', len(valid_dataset))
     print("1 valid epoch has ", len(valid_dataset) // config.BATCH_SIZE, ' iterations')
-    train_dataset = FlownetCGTrain(data_root='/home/cap/dataset/tiny_ytb', mode='train')
+    train_dataset = FlownetCGTrain(data_root=config.DATA_ROOT, mode='train')
     print('the size of train dataset is ', len(train_dataset))
     print("1 train epoch has ", len(train_dataset) // config.BATCH_SIZE, ' iterations')
     # res = dataset.__getitem__(5)
