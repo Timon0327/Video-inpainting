@@ -239,10 +239,9 @@ class FlownetCGTrain(Dataset):
 
         if self.mode == 'train':
             self.file = os.path.join(data_root, 'train_gflownet.txt')
-        elif self.mode == 'valid':
-            self.file = os.path.join(data_root, 'valid_gflownet.txt')
         else:
-            self.file = os.path.join(data_root, 'test_gflownet.txt')
+            self.file = os.path.join(data_root, 'valid_gflownet.txt')
+
 
         if not os.path.exists(self.file):
             with open(self.file, 'w') as f:
@@ -259,11 +258,11 @@ class FlownetCGTrain(Dataset):
 
                     # generate text file
                     for i in range(feature_num):
-                        first = features[i].split('.')[0]
-                        id = images.index(first + '.jpg')
-                        second = images[id + 1].split('.')[0]
                         # file format: frame1 frame2 feature (mask1 mask2 gt) (output)
                         if 'rpk' in features[i]:
+                            second = features[i].split('.')[0]
+                            id = images.index(second + '.jpg')
+                            first = images[id - 1].split('.')[0]
                             f.write(os.path.join(os.path.join(self.img_dir, video), second + '.jpg'))
                             f.write(' ')
                             f.write(os.path.join(os.path.join(self.img_dir, video), first + '.jpg'))
@@ -273,15 +272,13 @@ class FlownetCGTrain(Dataset):
                             f.write(os.path.join(os.path.join(self.mask_dir, video), second + '.png'))
                             f.write(' ')
                             f.write(os.path.join(os.path.join(self.mask_dir, video), first + '.png'))
-                            if mode == 'train' or mode == 'valid':
-                                f.write(' ')
-                                f.write(os.path.join(os.path.join(self.gt_dir, video), second + '.rflo'))
-                            else:
-                                f.write(' ')
-                                f.write(os.path.join(os.path.join(self.out_dir, video), second + '.rflo'))
+                            f.write(' ')
+                            f.write(os.path.join(os.path.join(self.gt_dir, video), second + '.rflo'))
                             f.write('\n')
                         else:
-
+                            first = features[i].split('.')[0]
+                            id = images.index(first + '.jpg')
+                            second = images[id + 1].split('.')[0]
                             f.write(os.path.join(os.path.join(self.img_dir, video), first + '.jpg'))
                             f.write(' ')
                             f.write(os.path.join(os.path.join(self.img_dir, video), second + '.jpg'))
@@ -291,12 +288,8 @@ class FlownetCGTrain(Dataset):
                             f.write(os.path.join(os.path.join(self.mask_dir, video), first + '.png'))
                             f.write(' ')
                             f.write(os.path.join(os.path.join(self.mask_dir, video), second + '.png'))
-                            if mode == 'train' or mode == 'valid':
-                                f.write(' ')
-                                f.write(os.path.join(os.path.join(self.gt_dir, video), first + '.flo'))
-                            else:
-                                f.write(' ')
-                                f.write(os.path.join(os.path.join(self.out_dir, video), first + '.flo'))
+                            f.write(' ')
+                            f.write(os.path.join(os.path.join(self.gt_dir, video), first + '.flo'))
                             f.write('\n')
 
         self.frame_list1 = []
@@ -317,10 +310,8 @@ class FlownetCGTrain(Dataset):
                 self.feature_list.append(filenames[2])
                 self.mask_list1.append(filenames[3])
                 self.mask_list2.append(filenames[4])
-                if mode == 'train' or mode == 'valid':
-                    self.gt_list.append(filenames[5])
-                else:
-                    self.out_list.append(filenames[-1])
+                self.gt_list.append(filenames[5])
+
 
     def __len__(self):
         return len(self.frame_list1)
@@ -353,21 +344,17 @@ class FlownetCGTrain(Dataset):
             feature = torch.cat(feature, dim=0)
             # feature.requires_grad_(False)
 
-        if self.mode != 'test':
-            gt = cvb.read_flow(os.path.join(self.gt_dir, self.gt_list[idx]))
-            gt = torch.from_numpy(gt[:, :, :]).permute(2, 0, 1)
-            gt.requires_grad_(False)
-            result = {
+
+        gt = cvb.read_flow(os.path.join(self.gt_dir, self.gt_list[idx]))
+        gt = torch.from_numpy(gt[:, :, :]).permute(2, 0, 1)
+        gt.requires_grad_(False)
+        result = {
                 'frames': imgs,
                 'feature': feature,
                 'mask1': mask1,
                 'mask2': mask2,
                 'gt': gt
-            }
-        else:
-            result = {'frames': imgs,
-                      'feature': feature,
-                      'out_file': self.out_list[idx]}
+        }
 
         return result
 
@@ -907,10 +894,10 @@ if __name__ == '__main__':
     #                       out_dir=None,
     #                       slice=config.SLICE,
     #                       N=config.N)
-    valid_dataset = FlownetCGTrain(data_root=config.VALID_ROOT, mode='valid')
+    valid_dataset = FlownetCGTrain(data_root='/home/cap/dataset/tiny_ytb', mode='valid')
     print('the size of valid dataset is ', len(valid_dataset))
     print("1 valid epoch has ", len(valid_dataset) // config.BATCH_SIZE, ' iterations')
-    train_dataset = FlownetCGTrain(data_root=config.DATA_ROOT, mode='train')
+    train_dataset = FlownetCGTrain(data_root='/home/cap/dataset/tiny_ytb', mode='train')
     print('the size of train dataset is ', len(train_dataset))
     print("1 train epoch has ", len(train_dataset) // config.BATCH_SIZE, ' iterations')
     # res = dataset.__getitem__(5)
