@@ -49,7 +49,7 @@ DATA_ROOT = '/mnt/qinlikun/dataset/youtube/train'
 SAVE_DIR = '/mnt/qinlikun/inpainting'
 
 # maximum steps
-MAX_ITER = 25000
+MAX_ITER = 160000
 DECAY_EPOCHES = [40, 50]
 
 EPOCH = 60
