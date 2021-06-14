@@ -16,6 +16,8 @@ def parse_args():
 
     parser.add_argument('--pretrained_model_flownet2', type=str,
                         default=config.FLOWNET_WEIGHT)
+    parser.add_argument('--data_root', type=str,
+                        default=config.DATA_ROOT)
     parser.add_argument('--mode', type=str, default='gt')
     parser.add_argument('--img_size', type=list, default=config.IMG_SIZE)
     parser.add_argument('--rgb_max', type=float, default=255.)
@@ -47,7 +49,7 @@ def infer(args):
 
     Flownet.eval()
 
-    dataset_ = FlownetInfer(data_root=config.VALID_ROOT,
+    dataset_ = FlownetInfer(data_root=args.data_root,
                             out_dir=None
                             )
     dataloader_ = DataLoader(dataset_, batch_size=1, shuffle=False)
