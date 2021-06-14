@@ -54,7 +54,7 @@ DECAY_EPOCHES = [40, 50]
 
 EPOCH = 60
 
-BATCH_SIZE = 8
+BATCH_SIZE = 12
 
 # number of workers for dataloader
 N_THREADS = 8

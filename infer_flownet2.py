@@ -7,8 +7,8 @@ from torch.utils.data import DataLoader
 from mmcv import ProgressBar
 
 from models import FlowNet2
-from dataset.davis import FlownetInfer
-from cfgs import config
+from dataset.youtube import FlownetInfer
+from cfgs import config_ytb as config
 
 
 def parse_args():
@@ -48,7 +48,6 @@ def infer(args):
     Flownet.eval()
 
     dataset_ = FlownetInfer(data_root=config.DATA_ROOT,
-                            mode=args.mode,
                             out_dir=None
                             )
     dataloader_ = DataLoader(dataset_, batch_size=1, shuffle=False)

@@ -14,7 +14,7 @@ from tensorboardX import SummaryWriter
 from torch.optim.lr_scheduler import MultiStepLR
 # from torch.nn.parallel import DistributedDataParallel
 
-from dataset.davis import FlownetCGTrain
+from dataset.youtube import FlownetCGTrain
 from models.FlownetCG import FlownetCG, change_state_dict
 from cfgs import config_ytb as config
 from utils.losses import L1Loss
