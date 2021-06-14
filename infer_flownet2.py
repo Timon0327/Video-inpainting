@@ -47,7 +47,7 @@ def infer(args):
 
     Flownet.eval()
 
-    dataset_ = FlownetInfer(data_root=config.DATA_ROOT,
+    dataset_ = FlownetInfer(data_root=config.VALID_ROOT,
                             out_dir=None
                             )
     dataloader_ = DataLoader(dataset_, batch_size=1, shuffle=False)
