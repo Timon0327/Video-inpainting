@@ -49,12 +49,12 @@ DATA_ROOT = '/mnt/qinlikun/dataset/youtube/train'
 SAVE_DIR = '/mnt/qinlikun/inpainting'
 
 # maximum steps
-MAX_ITER = 140000
-DECAY_EPOCHES = [30, 40]
+MAX_ITER = 21000
+DECAY_EPOCHES = [1, 4]
 
-EPOCH = 50
+EPOCH = 7
 
-BATCH_SIZE = 30
+BATCH_SIZE = 36
 
 # number of workers for dataloader
 N_THREADS = 8
