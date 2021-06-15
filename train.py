@@ -211,14 +211,14 @@ def train(args):
                 feature = valid_data['feature'].to(device)
                 gt = valid_data['gt'].to(device)
                 res_flow = flownetcg(frames, feature)
-                if i == 1:
+                if i == 0:
                     print('frames size: ', frames.size())
                     print('feature size: ', feature.size())
                     print('gt size: ', gt.size())
                     print('result size: ', res_flow.size())
 
                 test_loss = l1loss(res_flow, gt)
-                if i == 1:
+                if i == 0:
                     print('test loss: ', test_loss)
                 test_losses.append(test_loss[1].item())
         test_epe = np.sum(test_losses) / len(test_losses)
