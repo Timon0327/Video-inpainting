@@ -210,7 +210,7 @@ def train(args):
                 frames = valid_data['frames'].to(device)
                 feature = valid_data['feature'].to(device)
                 gt = valid_data['gt'].to(device)
-                res_flow = flownetcg(frames, feature)
+                res_flow = flownetcg(frames, feature)[0]
                 if i == 0:
                     print('frames size: ', frames.size())
                     print('feature size: ', feature.size())
