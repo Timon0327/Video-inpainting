@@ -344,7 +344,6 @@ class FlownetCGTrain(Dataset):
             feature = torch.cat(feature, dim=0)
             # feature.requires_grad_(False)
 
-
         gt = cvb.read_flow(os.path.join(self.gt_dir, self.gt_list[idx]))
         gt = torch.from_numpy(gt[:, :, :]).permute(2, 0, 1)
         gt.requires_grad_(False)

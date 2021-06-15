@@ -271,6 +271,9 @@ def main():
     else:
         args.frame_dir = os.path.join(args.dataset_root, 'frames')
 
+    frames = os.listdir(args.frame_dir)
+    print('there are ', len(frames) - 9, ' images to inpaint')
+    start_time = time.time()
     if args.feature:
         extract_features(backbone='resnet50')
 
@@ -289,6 +292,9 @@ def main():
         args.img_shape = args.img_size
 
     flow_guided_propagation(args)
+
+    end_time = time.time()
+    print('it takes ', start_time - end_time, ' seconds to inpaint')
 
     if not args.gt_dir:
         args.gt_dir = args.frame_dir

@@ -16,7 +16,7 @@ DATASET = 'ytb'  # or 'ytb'
 TEST_ROOT = '/mnt/qinlikun/dataset/test'
 
 # directory of valid frames
-VALID_ROOT = '/mnt/qinlikun/dataset/youtube/valid'
+VALID_ROOT = '/mnt/qinlikun/dataset/youtube/little'
 
 # corrupted area has size of (MASK_RATIO * height, MASK_RATIO * width)
 MASK_RATIO = 0.25
@@ -44,15 +44,15 @@ RESNET101_WEIGHT = '/mnt/qinlikun/inpainting/resnet/resnet101-5d3b4d8f.pth '
 ############### Training Setting ################
 '''
 
-DATA_ROOT = '/mnt/qinlikun/dataset/youtube/train'
+DATA_ROOT = '/mnt/qinlikun/dataset/youtube/little'
 
 SAVE_DIR = '/mnt/qinlikun/inpainting'
 
 # maximum steps
-MAX_ITER = 160000
-DECAY_EPOCHES = [40, 50]
+MAX_ITER = 140000
+DECAY_EPOCHES = [30, 40]
 
-EPOCH = 60
+EPOCH = 50
 
 BATCH_SIZE = 30
 
