@@ -41,7 +41,7 @@ def parse_args():
     parser.add_argument('--EPOCH', type=int, default=config.EPOCH)
     parser.add_argument('--WEIGHT_DECAY', type=float, default=config.WEIGHTED_DECAY)
     parser.add_argument('--PRINT_EVERY', type=int, default=10)
-    parser.add_argument('--MODEL_SAVE_STEP', type=int, default=5000)
+    parser.add_argument('--MODEL_SAVE_STEP', type=int, default=2000)
     parser.add_argument('--DECAY_EPOCHES', type=list, default=config.DECAY_EPOCHES)
 
     # parser.add_argument('--VALID_EVERY', type=int, default=100)
