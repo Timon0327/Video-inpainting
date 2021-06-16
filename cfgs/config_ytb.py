@@ -49,10 +49,10 @@ DATA_ROOT = '/mnt/qinlikun/dataset/youtube/train'
 SAVE_DIR = '/mnt/qinlikun/inpainting'
 
 # maximum steps
-MAX_ITER = 21000
-DECAY_EPOCHES = [1, 4]
+MAX_ITER = 21000    # 21000
+DECAY_EPOCHES = [2]  # [5, 8]
 
-EPOCH = 7
+EPOCH = 11   # 11
 
 BATCH_SIZE = 36
 
@@ -60,7 +60,7 @@ BATCH_SIZE = 36
 N_THREADS = 8
 
 # learning rate
-LR = 1e-4
+LR = 1e-5   # 1e-4
 
 WEIGHTED_DECAY = 0.00004
 

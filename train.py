@@ -227,6 +227,15 @@ def train(args):
             best_epe = test_epe
             best_step = step
             print('new best!!')
+            path = os.path.join(ckpt_dir, 'flownetcg_' + str(step) + '.pt')
+            torch.save({
+                'epoch': epoch,
+                'step': step,
+                'flownetcg': flownetcg.module.state_dict(),
+                'optimizer': optimizer.state_dict(),
+                'loss': loss[0].item()
+            }, path)
+            print('model has been saved in ', path)
         writer.add_scalar('valid epe', test_epe, global_step=step)
         print('the best epe so far is', best_epe)
         print('the best epe is at ', best_step)
