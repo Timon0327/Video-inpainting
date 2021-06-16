@@ -193,7 +193,7 @@ def extract_flow(args):
             frames = valid_data['frames'].to(device)
             feature = valid_data['feature'].to(device)
             output_file = valid_data['out_file'][0]
-            res_flow = flownetcg(frames, feature)
+            res_flow = flownetcg(frames, feature)[0]
 
             res_flow = torch.squeeze(res_flow)
             result = res_flow.permute(1, 2, 0).data.cpu().numpy()
