@@ -744,145 +744,6 @@ class ResnetInferTest(Dataset):
         return result
 
 
-class GFCNetData(Dataset):
-    '''
-    dataset for Graph Flow Completion Network
-    '''
-    def __init__(self, data_root, mode, flow_dir=None, feature_dir=None, mask_dir=None, gt_dir=None):
-        '''
-        initialize dataset for GFCNet
-        data_root structure:
-            |-- dataroot
-                |-- Annotations
-                |-- JPEGImages
-                |-- masks
-                |-- ImageSets
-                |-- feature (possibly)
-                |-- flow (possibly)
-                |-- gt (possibly)
-        :param data_root: the directory of data_root
-        :param mode: 'train', 'val' or 'test'
-        :param flow_dir: the directory of flow files. If None, then use the one in data_root directory.
-        :param feature_dir: the directory of feature files. If None, then use the one in data_root directory.
-        :param mask_dir: the directory of mask files. If None, then use the one in data_root directory.
-        :param gt_dir: the directory of gt flow files. If None, then use the one in data_root directory.
-        '''
-        self.data_root = data_root
-        self.mode = mode
-
-        # set path
-        self.mask_dir = mask_dir if not mask_dir else os.path.join(data_root, 'masks')
-        self.flow_dir = flow_dir if not flow_dir else os.path.join(data_root, 'flow')
-        self.feature_dir = feature_dir if not feature_dir else os.path.join(data_root, 'feature')
-        self.gt_dir = gt_dir if not gt_dir else os.path.join(data_root, 'gt')
-
-        # load video names
-        if mode == 'train':
-            self.video_file = os.path.join(data_root, 'ImageSets', '2017', 'train.txt')
-        elif mode == 'val':
-            self.video_file = os.path.join(data_root, 'ImageSets', '2017', 'val.txt')
-        else:
-            self.video_file = os.path.join(data_root, 'ImageSets', '2017', 'test.txt')
-
-        with open(self.video_file, 'r') as f:
-            tmp = f.readlines()
-            self.video_list = [x[:-1] for x in tmp]
-            self.video_list.sort()
-
-        self.feature_list = []
-        self.flow_list_f = []          # list for forward flow
-        self.flow_list_b = []          # list for backward flow
-        self.mask1 = []                # list for previous mask
-        self.mask2 = []                # list for following mask
-        self.gt_list_f = []            # list for ground truth of forward flow
-        self.gt_list_b = []            # list for ground truth of backward flow
-
-        for video in self.video_list:
-            feature_names = os.listdir(os.path.join(self.feature_dir, video))
-            feature_names.sort()
-
-            # get the list of all backward flow files
-            rflo_names = []
-            for file in os.listdir(os.path.join(self.flow_dir, video)):
-                if file.endswith('.rflo'):
-                    rflo_names.append(file)
-            rflo_names.sort()
-
-            for one in feature_names:
-                img_id = one.split('.')[0]
-                rflo_id = rflo_names.index(img_id + '.rflo') + 1
-                img2_id = rflo_names[rflo_id].split('.')[0]
-
-                self.feature_list.append(os.path.join(video, one))
-
-                self.flow_list_f.append(os.path.join(video, img_id + '.flo'))
-                self.flow_list_b.append(os.path.join(video, rflo_names[rflo_id]))
-
-                self.mask1.append(os.path.join(video, img_id + '.png'))
-                self.mask2.append(os.path.join(video, img2_id + '.png'))
-
-                self.gt_list_f.append(os.path.join(video, img_id + '.flo'))
-                self.gt_list_b.append(os.path.join(video, img2_id + '.rflo'))
-
-    def __len__(self):
-        return len(self.feature_list)
-
-    def __getitem__(self, idx):
-        '''
-        get corrupted forward and backward flow, features of 2N frames
-        if the mode is 'train' or 'val, get 2 masks and 2 ground-truth flow in addition
-
-        :param idx:
-        :return:
-        '''
-
-        with open(os.path.join(self.feature_dir, self.feature_list[idx]), 'rb') as f:
-            feature = pickle.load(f)
-            feature = torch.from_numpy(feature)
-            feature.requires_grad_(False)
-
-        flow_f = cvb.read_flow(os.path.join(self.flow_dir, self.flow_list_f[idx]))
-        flow_b = cvb.read_flow(os.path.join(self.flow_dir, self.flow_list_b[idx]))
-        flow_f = torch.from_numpy(flow_f[np.newaxis, :, :, :])
-        flow_b = torch.from_numpy(flow_b[np.newaxis, :, :, :])
-        flows = torch.cat([flow_f, flow_b], dim=0)
-        flows.requires_grad_(False)
-
-        if self.mode == 'train' or self.mode == 'val':
-            mask1 = cv.imread(os.path.join(self.mask_dir, self.mask1[idx]))[:, :, 2]
-            mask2 = cv.imread(os.path.join(self.mask_dir, self.mask2[idx]))[:, :, 2]
-
-            mask1 = np.concatenate([mask1[:, :, np.newaxis], mask1[:, :, np.newaxis]], axis=2)
-            mask2 = np.concatenate([mask2[:, :, np.newaxis], mask2[:, :, np.newaxis]], axis=2)
-
-            mask1 = torch.from_numpy(mask1[np.newaxis, :, :, :])
-            mask2 = torch.from_numpy(mask2[np.newaxis, :, :, :])
-            masks = torch.cat([mask1, mask2], dim=0)
-            masks.requires_grad_(False)
-
-            gt_f = cvb.read_flow(os.path.join(self.gt_dir, self.gt_list_f[idx]))
-            gt_b = cvb.read_flow(os.path.join(self.gt_dir, self.gt_list_b[idx]))
-
-            gt_f = torch.from_numpy(gt_f[np.newaxis, :, :, :])
-            gt_b = torch.from_numpy(gt_b[np.newaxis, :, :, :])
-            gts = torch.cat([gt_f, gt_b], dim=0)
-            gts.requires_grad_(False)
-
-            result = {'feature': feature,       # shape [nodes, 2048]
-                      'flows': flows,           # shape [2, height, width, 2]
-                      'masks': masks,           # shape [2, height, width, 2]
-                      'gts': gts                # shape [2, height, width, 2]
-                     }
-
-            return result
-        else:
-            result = {'feature': feature,
-                      'flows': flows,
-                      'output_forward': self.flow_list_f[idx],
-                      'output_backward': self.flow_list_b[idx]}
-            return result
-
-
 if __name__ == '__main__':
     # dataset = FlownetInfer(data_root='/home/captain/dataset/tiny_DAVIS',
     #                         mode='restore',
@@ -893,6 +754,8 @@ if __name__ == '__main__':
     #                       out_dir=None,
     #                       slice=config.SLICE,
     #                       N=config.N)
+    test_dataset = FlownetCGTest(data_root='/home/cap/dataset/demo_ytb')
+    one = test_dataset[1]
     valid_dataset = FlownetCGTrain(data_root=config.VALID_ROOT, mode='valid')
     print('the size of valid dataset is ', len(valid_dataset))
     print("1 valid epoch has ", len(valid_dataset) // config.BATCH_SIZE, ' iterations')

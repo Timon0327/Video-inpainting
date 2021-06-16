@@ -11,14 +11,14 @@ from models.FlowNet2_Models.submodules import *
 from models.FlowNet2_Models.correlation_package.correlation import Correlation
 from models.GCN_model import GCN_3
 # import cfgs.config_local as config
-from cfgs import config
+from cfgs import config_ytb as config
 import torch.nn.init as init
 import torch
 import torch.nn as nn
 from torch.optim.lr_scheduler import MultiStepLR
 import argparse
 from torch.utils.data import DataLoader
-from dataset.davis import FlownetCGTest
+from dataset.youtube import FlownetCGTest
 
 
 class FlownetCG(nn.Module):
@@ -237,7 +237,7 @@ if __name__ == '__main__':
     #     print(scheduler.get_lr())
     #     scheduler.step()
 
-    dataset = FlownetCGTest(data_root='/home/cap/dataset/demo')
+    dataset = FlownetCGTest(data_root='/home/cap/dataset/demo_ytb')
     dataloader = DataLoader(dataset, batch_size=1)
 
     for batch, data in enumerate(dataloader):
