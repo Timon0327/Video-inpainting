@@ -12,7 +12,7 @@ import cv2 as cv
 from torch.utils.data import DataLoader
 from skimage.metrics import peak_signal_noise_ratio, structural_similarity, mean_squared_error
 
-from dataset.davis import FlownetCGTest, ResnetInferTest
+from dataset.youtube import FlownetCGTest, ResnetInferTest
 from models.Resnet import resnet50, resnet101
 from models.FlownetCG import FlownetCG
 from cfgs import config_ytb as config
