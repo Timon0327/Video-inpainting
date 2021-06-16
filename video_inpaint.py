@@ -10,7 +10,7 @@ from tqdm import tqdm
 import numpy as np
 import cv2 as cv
 from torch.utils.data import DataLoader
-from skimage.metrics import peak_signal_noise_ratio, structural_similarity
+from skimage.metrics import peak_signal_noise_ratio, structural_similarity, mean_squared_error
 
 from dataset.davis import FlownetCGTest, ResnetInferTest
 from models.Resnet import resnet50, resnet101
@@ -36,7 +36,7 @@ def parse_argse():
     parser.add_argument('--gt_dir', type=str, default=None,
                         help='Give the dir of the ground truth of video frames')
     parser.add_argument('--checkpoint', type=str,
-                        default='/mnt/qinlikun/inpainting/ckpt/flownetcg_24000.pt')
+                        default='/mnt/qinlikun/inpainting/ytb_ckpt/flownetcg_10000.pt')
     parser.add_argument('--batch_size', type=int, default=1)
 
     parser.add_argument('--output_root', type=str,
@@ -68,22 +68,23 @@ def parse_argse():
     return args
 
 
-def extract_features(backbone, batch_size=1):
+def extract_features(backbone, args):
     '''
     extract feature
     :param backbone: str, 'resnet50' or 'resnet101'
+    :param args
     :param batch_size: int
     :return:
     '''
     # load data
-    feature_dataset = ResnetInferTest(data_root=config.TEST_ROOT,
+    feature_dataset = ResnetInferTest(data_root=args.data_root,
                                       mask_dir=None,
                                       out_dir=None,
                                       slice=config.SLICE,
                                       N=config.N
                                       )
     print(len(feature_dataset))
-    dataloader = DataLoader(feature_dataset, batch_size=batch_size)
+    dataloader = DataLoader(feature_dataset, batch_size=args.batch_size)
 
     # create model
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -142,8 +143,8 @@ def extract_flow(args):
 
     # dataset
 
-    test_dataset = FlownetCGTest(data_root=config.TEST_ROOT)
-    test_dataloader = DataLoader(test_dataset, batch_size=1)
+    test_dataset = FlownetCGTest(data_root=args.data_root)
+    test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size)
     test_len = len(test_dataset)
 
     # model
@@ -236,6 +237,7 @@ def psnr_and_ssim(args):
     result_list = os.listdir(result_dir)
     result_list.sort()
 
+    mses = []
     psnrs = []
     ssims = []
 
@@ -245,18 +247,22 @@ def psnr_and_ssim(args):
         gt = cv.resize(gt, args.img_size)
         pred = cv.imread(os.path.join(result_dir, one))
 
+        mse = mean_squared_error(gt, pred)
         psnr = peak_signal_noise_ratio(image_true=gt, image_test=pred.astype(np.uint8))
         ssim = structural_similarity(gt, pred.astype(np.uint8), multichannel=True)
 
         print('image ', one)
-        print('psnr: ', psnr, '      ssim: ', ssim)
+        print('mse: ', mse, '     psnr: ', psnr, '      ssim: ', ssim)
+        mses.append(mse)
         psnrs.append(psnr)
         ssims.append(ssim)
 
+    mse_mean = np.mean(mses)
     psnr_mean = np.mean(psnrs)
     ssim_mean = np.mean(ssims)
 
     print('---------------------------')
+    print('average mse is ', mse_mean)
     print('average psnr is ', psnr_mean)
     print('average ssim is ', ssim_mean)
 
@@ -275,7 +281,7 @@ def main():
     print('there are ', len(frames) - 9, ' images to inpaint')
     start_time = time.time()
     if args.feature:
-        extract_features(backbone='resnet50')
+        extract_features(backbone='resnet50', args=args)
 
     if args.flow:
         extract_flow(args)   # args.flow_root='.../demo/flow'
