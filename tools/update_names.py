@@ -1,4 +1,6 @@
 import os
+import sys
+sys.path.append('..')
 import cfgs.config_ytb as config
 
 test_dir = os.path.join(config.TEST_ROOT, 'frames')
