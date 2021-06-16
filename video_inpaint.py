@@ -28,6 +28,8 @@ def parse_argse():
     parser.add_argument('--flow', action='store_true')
     parser.add_argument('--dataset_root', type=str,
                         default=config.TEST_ROOT)
+    parser.add_argument('--dataset', type=str,
+                        default=config.DATASET)
     parser.add_argument('--mask_type', type=str,
                         default=config.MASK_TYPE)
     parser.add_argument('--img_size', type=int, nargs='+',
