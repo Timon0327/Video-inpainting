@@ -77,7 +77,7 @@ def extract_features(backbone, args):
     :return:
     '''
     # load data
-    feature_dataset = ResnetInferTest(data_root=args.data_root,
+    feature_dataset = ResnetInferTest(data_root=args.dataset_root,
                                       mask_dir=None,
                                       out_dir=None,
                                       slice=config.SLICE,
@@ -143,7 +143,7 @@ def extract_flow(args):
 
     # dataset
 
-    test_dataset = FlownetCGTest(data_root=args.data_root)
+    test_dataset = FlownetCGTest(data_root=args.dataset_root)
     test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size)
     test_len = len(test_dataset)
 
