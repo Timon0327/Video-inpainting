@@ -126,12 +126,8 @@ def propagation(args, frame_inapint_model=None):
         results[0][..., 0] = image
         time_stamp[0][label == 0, 0] = 0
         prog_bar = ProgressBar(frames_num-1)
-        if args.dataset == 'davis':
-            interval = 1
-        elif args.dataset == 'ytb':
-            interval = 5
 
-        for th in range(1, frames_num * interval, interval):
+        for th in range(1, frames_num):
             prog_bar.update()
             if iter_num == 0:
                 image = cv2.imread(os.path.join(img_root, frame_name_list[th]))
