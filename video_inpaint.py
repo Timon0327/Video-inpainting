@@ -26,6 +26,7 @@ def parse_argse():
 
     parser.add_argument('--feature', action='store_true')
     parser.add_argument('--flow', action='store_true')
+    parser.add_argument('--propagation', action='store_true')
     parser.add_argument('--dataset_root', type=str,
                         default=config.TEST_ROOT)
     parser.add_argument('--dataset', type=str,
@@ -244,7 +245,8 @@ def psnr_and_ssim(args):
 
     for one in result_list:
         name = one.split('.')[0]
-        gt = cv.imread(os.path.join(gt_dir, name + '.jpg'))
+        id = int(name)
+        gt = cv.imread(os.path.join(gt_dir, '%05d.jpg' % (id - 4)))
         gt = cv.resize(gt, args.img_size)
         pred = cv.imread(os.path.join(result_dir, one))
 
@@ -298,10 +300,11 @@ def main():
     if args.img_size is not None:
         args.img_shape = args.img_size
 
-    flow_guided_propagation(args)
+    if args.propagation:
+        flow_guided_propagation(args)
 
     end_time = time.time()
-    print('it takes ', start_time - end_time, ' seconds to inpaint')
+    print('it takes ', end_time - start_time, ' seconds to inpaint')
 
     if not args.gt_dir:
         args.gt_dir = args.frame_dir
