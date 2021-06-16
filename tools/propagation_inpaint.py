@@ -103,12 +103,12 @@ def propagation(args, frame_inapint_model=None):
         if iter_num == 0:
             image = cv2.imread(os.path.join(img_root, frame_name_list[0]))
             image = cv2.resize(image, (shape[1], shape[0]))
-            if args.FIX_MASK:
-                label = cv2.imread(
-                    os.path.join(mask_root), cv2.IMREAD_UNCHANGED)
-            else:
+            if args.mask_type == 'random':
                 label = cv2.imread(
                     os.path.join(mask_root, '%05d.png' % (0 + flow_start_no)), cv2.IMREAD_UNCHANGED)
+            else:
+                label = cv2.imread(
+                    os.path.join(mask_root, 'mask.png'), cv2.IMREAD_UNCHANGED)
             label = cv2.resize(label, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_NEAREST)
         else:
             image = result_pool[0]
@@ -140,12 +140,12 @@ def propagation(args, frame_inapint_model=None):
             flow2 = flo.flow_tf(flow2, image.shape)
 
             if iter_num == 0:
-                if not args.FIX_MASK:
+                if args.mask_type == 'random':
                     label = cv2.imread(
-                        os.path.join(mask_root, '%05d.png' % (th + flow_start_no)), cv2.IMREAD_UNCHANGED)
+                        os.path.join(mask_root, '%05d.png' % (0 + flow_start_no)), cv2.IMREAD_UNCHANGED)
                 else:
                     label = cv2.imread(
-                        os.path.join(mask_root), cv2.IMREAD_UNCHANGED)
+                        os.path.join(mask_root, 'mask.png'), cv2.IMREAD_UNCHANGED)
                 label = cv2.resize(label, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_NEAREST)
             else:
                 label = label_pool[th]
@@ -183,14 +183,12 @@ def propagation(args, frame_inapint_model=None):
                 os.path.join(img_root, frame_name_list[frames_num - 1]))
             image = cv2.resize(image, (shape[1], shape[0]))
 
-            if not args.FIX_MASK:
+            if args.mask_type == 'random':
                 label = cv2.imread(
-                    os.path.join(mask_root, '%05d.png' % (frames_num - 1 + flow_start_no)),
-                    cv2.IMREAD_UNCHANGED)
+                    os.path.join(mask_root, '%05d.png' % (0 + flow_start_no)), cv2.IMREAD_UNCHANGED)
             else:
                 label = cv2.imread(
-                    os.path.join(mask_root),
-                    cv2.IMREAD_UNCHANGED)
+                    os.path.join(mask_root, 'mask.png'), cv2.IMREAD_UNCHANGED)
             label = cv2.resize(label, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_NEAREST)
         else:
             image = result_pool[-1]
@@ -213,12 +211,12 @@ def propagation(args, frame_inapint_model=None):
             if iter_num == 0:
                 image = cv2.imread(os.path.join(img_root, frame_name_list[th]))
                 image = cv2.resize(image, (shape[1], shape[0]))
-                if not args.FIX_MASK:
+                if args.mask_type == 'random':
                     label = cv2.imread(
-                        os.path.join(mask_root, '%05d.png' % (th + flow_start_no)), cv2.IMREAD_UNCHANGED)
+                        os.path.join(mask_root, '%05d.png' % (0 + flow_start_no)), cv2.IMREAD_UNCHANGED)
                 else:
                     label = cv2.imread(
-                        os.path.join(mask_root), cv2.IMREAD_UNCHANGED)
+                        os.path.join(mask_root, 'mask.png'), cv2.IMREAD_UNCHANGED)
                 label = cv2.resize(label, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_NEAREST)
             else:
                 image = result_pool[th]
