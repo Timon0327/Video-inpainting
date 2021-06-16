@@ -128,7 +128,7 @@ def propagation(args, frame_inapint_model=None):
         prog_bar = ProgressBar(frames_num-1)
         if args.dataset == 'davis':
             interval = 1
-        elif args.dataset == 'youtube':
+        elif args.dataset == 'ytb':
             interval = 5
 
         for th in range(1, frames_num * interval, interval):
