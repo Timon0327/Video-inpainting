@@ -15,7 +15,7 @@ from skimage.metrics import peak_signal_noise_ratio, structural_similarity, mean
 from dataset.davis import FlownetCGTest, ResnetInferTest
 from models.Resnet import resnet50, resnet101
 from models.FlownetCG import FlownetCG
-from cfgs import config
+from cfgs import config_ytb as config
 import cvbase as cvb
 
 from tools.frame_inpaint import DeepFillv1
