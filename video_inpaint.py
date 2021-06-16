@@ -246,6 +246,7 @@ def psnr_and_ssim(args):
     for one in result_list:
         name = one.split('.')[0]
         id = int(name)
+        print('%05d.jpg' % (id - 4))
         gt = cv.imread(os.path.join(gt_dir, '%05d.jpg' % (id - 4)))
         gt = cv.resize(gt, args.img_size)
         pred = cv.imread(os.path.join(result_dir, one))
