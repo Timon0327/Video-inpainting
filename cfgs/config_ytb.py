@@ -40,6 +40,9 @@ FLOWNET_WEIGHT = '/mnt/qinlikun/inpainting/flownet/FlowNet2_checkpoint.pth.tar'
 RESNET50_WEIGHT = '/mnt/qinlikun/inpainting/resnet/resnet50-19c8e357.pth'
 RESNET101_WEIGHT = '/mnt/qinlikun/inpainting/resnet/resnet101-5d3b4d8f.pth '
 
+# image inpainting model
+DEEPFILL_WEIGHT = '/mnt/qinlikun/inpainting/imagenet_deepfill.pth'
+
 '''
 ############### Training Setting ################
 '''
