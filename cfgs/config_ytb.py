@@ -7,7 +7,7 @@
 '''
 ############### General Settings ################
 '''
-IMG_SIZE = (640, 640)       # (1792, 1792)
+IMG_SIZE = (512, 512)       # (640, 640)
 
 # dataset
 DATASET = 'ytb'  # or 'ytb'
@@ -53,7 +53,7 @@ SAVE_DIR = '/mnt/qinlikun/inpainting'
 
 # maximum steps
 MAX_ITER = 21000    # 21000
-DECAY_EPOCHES = [2]  # [5, 8]
+DECAY_EPOCHES = [5, 8]  # [5, 8]
 
 EPOCH = 11   # 11
 

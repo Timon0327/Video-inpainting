@@ -3,7 +3,7 @@ import sys
 sys.path.append('..')
 import cfgs.config_ytb as config
 
-test_dir = os.path.join(config.TEST_ROOT, 'frames')
+test_dir = os.path.join('/home/cap/dataset/demo_ytb/', 'frames')
 
 f_list = os.listdir(test_dir)
 for one in f_list:

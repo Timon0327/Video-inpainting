@@ -64,11 +64,12 @@ def propagation(args, frame_inapint_model=None):
         os.makedirs(output_root)
 
     frame_name_list = sorted(os.listdir(img_root))
-    frames_num = len(frame_name_list) - 9
-    frame_inpaint_seq = np.ones(frames_num-1)
-    masked_frame_num = np.sum((frame_inpaint_seq > 0).astype(np.int))
+    frames_num = len(frame_name_list) - 8
+    frame_inpaint_seq = np.ones(frames_num-1)   # [1,1,1,1,1,....]
+    masked_frame_num = np.sum((frame_inpaint_seq > 0).astype(np.int))   # frames_num - 1
     print(masked_frame_num, 'frames need to be inpainted.')
 
+    # figure out image shape
     image = cv2.imread(os.path.join(img_root, frame_name_list[0]))
     if img_shape[0] < 1:
         shape = image.shape
@@ -81,27 +82,27 @@ def propagation(args, frame_inapint_model=None):
     result_pool = [
         np.zeros(image.shape, dtype=image.dtype)
         for _ in range(frames_num)
-    ]
+    ]       # a list of ndarray, shape of which is the same as image [H, W, 3]
     label_pool = [
         np.zeros(image.shape, dtype=image.dtype)
         for _ in range(frames_num)
-    ]
+    ]       # a list of ndarray, shape of which is the same as image [H, W, 3]
 
     while masked_frame_num > 0:
 
         results = [
             np.zeros(image.shape + (2,), dtype=image.dtype)
             for _ in range(frames_num)
-        ]
+        ]       # a list of ndarray, shape of which is the same as image [H, W, 3, 2]
         time_stamp = [
             -np.ones(image.shape[:2] + (2,), dtype=int)
             for _ in range(frames_num)
-        ]
+        ]       # a list of ndarray, shape of which is the same as image [H, W, 2]
 
         print('Iter', iter_num, 'Forward Propagation')
         # forward
         if iter_num == 0:
-            image = cv2.imread(os.path.join(img_root, frame_name_list[0]))
+            image = cv2.imread(os.path.join(img_root, frame_name_list[4]))
             image = cv2.resize(image, (shape[1], shape[0]))
             if args.mask_type == 'random':
                 label = cv2.imread(
@@ -109,7 +110,7 @@ def propagation(args, frame_inapint_model=None):
             else:
                 label = cv2.imread(
                     os.path.join(mask_root, 'mask.png'), cv2.IMREAD_UNCHANGED)
-            label = cv2.resize(label, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_NEAREST)
+            # label = cv2.resize(label, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_NEAREST)
         else:
             image = result_pool[0]
             label = label_pool[0]
@@ -130,15 +131,15 @@ def propagation(args, frame_inapint_model=None):
         for th in range(1, frames_num):
             prog_bar.update()
             if iter_num == 0:
-                image = cv2.imread(os.path.join(img_root, frame_name_list[th]))
+                image = cv2.imread(os.path.join(img_root, frame_name_list[th - 1 + flow_start_no]))
                 image = cv2.resize(image, (shape[1], shape[0]))
             else:
                 image = result_pool[th]
 
             flow1 = flo.readFlow(os.path.join(flow_root, '%05d.flo' % (th - 1 + flow_start_no)))
             flow2 = flo.readFlow(os.path.join(flow_root, '%05d.rflo' % (th + flow_start_no)))
-            flow1 = flo.flow_tf(flow1, image.shape)
-            flow2 = flo.flow_tf(flow2, image.shape)
+            # flow1 = flo.flow_tf(flow1, image.shape)
+            # flow2 = flo.flow_tf(flow2, image.shape)
 
             if iter_num == 0:
                 if args.mask_type == 'random':
@@ -147,7 +148,7 @@ def propagation(args, frame_inapint_model=None):
                 else:
                     label = cv2.imread(
                         os.path.join(mask_root, 'mask.png'), cv2.IMREAD_UNCHANGED)
-                label = cv2.resize(label, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_NEAREST)
+                # label = cv2.resize(label, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_NEAREST)
             else:
                 label = label_pool[th]
 
@@ -190,7 +191,7 @@ def propagation(args, frame_inapint_model=None):
             else:
                 label = cv2.imread(
                     os.path.join(mask_root, 'mask.png'), cv2.IMREAD_UNCHANGED)
-            label = cv2.resize(label, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_NEAREST)
+            # label = cv2.resize(label, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_NEAREST)
         else:
             image = result_pool[-1]
             label = label_pool[-1]
@@ -218,15 +219,15 @@ def propagation(args, frame_inapint_model=None):
                 else:
                     label = cv2.imread(
                         os.path.join(mask_root, 'mask.png'), cv2.IMREAD_UNCHANGED)
-                label = cv2.resize(label, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_NEAREST)
+                # label = cv2.resize(label, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_NEAREST)
             else:
                 image = result_pool[th]
                 label = label_pool[th]
 
             flow1 = flo.readFlow(os.path.join(flow_root, '%05d.rflo' % (th + 1 + flow_start_no)))
             flow2 = flo.readFlow(os.path.join(flow_root, '%05d.flo' % (th + flow_start_no)))
-            flow1 = flo.flow_tf(flow1, image.shape)
-            flow2 = flo.flow_tf(flow2, image.shape)
+            # flow1 = flo.flow_tf(flow1, image.shape)
+            # flow2 = flo.flow_tf(flow2, image.shape)
 
             if len(label.shape) == 3:
                 label = label[:, :, 0]
@@ -240,10 +241,9 @@ def propagation(args, frame_inapint_model=None):
             temp1 = flo.get_warp_label(flow1, flow2,
                                        results[th + 1][..., 1],
                                        th=th_warp)
-            temp2 = flo.get_warp_label(
-                flow1, flow2, time_stamp[th + 1],
-                value=-1,
-                th=th_warp,
+            temp2 = flo.get_warp_label(flow1, flow2,
+                                       time_stamp[th + 1],
+                                       value=-1,th=th_warp,
             )[..., 1]
 
             results[th][..., 1] = temp1

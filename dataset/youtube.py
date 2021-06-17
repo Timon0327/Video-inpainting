@@ -140,8 +140,10 @@ class FlownetInfer(Dataset):
 
         frame1 = cv.resize(frame1, config.IMG_SIZE)
         frame2 = cv.resize(frame2, config.IMG_SIZE)
-        img1 = totensor(frame1)
-        img2 = totensor(frame2)
+        img1 = torch.from_numpy(frame1).permute(2, 0, 1).contiguous().float()
+        img2 = torch.from_numpy(frame2).permute(2, 0, 1).contiguous().float()
+        # img1 = totensor(frame1)
+        # img2 = totensor(frame2)
 
         result = {'frame1': img1,
                   'frame2': img2,
