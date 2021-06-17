@@ -47,7 +47,7 @@ DEEPFILL_WEIGHT = '/mnt/qinlikun/inpainting/imagenet_deepfill.pth'
 ############### Training Setting ################
 '''
 
-DATA_ROOT = '/mnt/qinlikun/dataset/youtube/little'  # '/mnt/qinlikun/dataset/youtube/train'
+DATA_ROOT = '/mnt/qinlikun/dataset/youtube/train'  # '/mnt/qinlikun/dataset/youtube/train'
 
 SAVE_DIR = '/mnt/qinlikun/inpainting'
 
@@ -63,7 +63,7 @@ BATCH_SIZE = 36
 N_THREADS = 8
 
 # learning rate
-LR = 1e-5   # 1e-4
+LR = 1e-4   # 1e-4
 
 WEIGHTED_DECAY = 0.00004
 
