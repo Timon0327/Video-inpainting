@@ -17,7 +17,7 @@ def parse_args():
     parser.add_argument('--pretrained_model_flownet2', type=str,
                         default=config.FLOWNET_WEIGHT)
     parser.add_argument('--data_root', type=str,
-                        default=config.DATA_ROOT)
+                        default=config.VALID_ROOT)
     parser.add_argument('--mode', type=str, default='gt')
     parser.add_argument('--img_size', type=list, default=config.IMG_SIZE)
     parser.add_argument('--rgb_max', type=float, default=255.)

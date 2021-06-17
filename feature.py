@@ -24,7 +24,7 @@ def extract_features(backbone, dataset='davis', batch_size=1):
     :return:
     '''
     # load data
-    feature_dataset = ResnetInfer(data_root=config.VALID_ROOT,
+    feature_dataset = ResnetInfer(data_root=config.DATA_ROOT,
                                   mask_dir=None,
                                   out_dir=None,
                                   slice=config.SLICE,
