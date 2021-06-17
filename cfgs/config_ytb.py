@@ -7,7 +7,7 @@
 '''
 ############### General Settings ################
 '''
-IMG_SIZE = (512, 512)       # (640, 640)
+IMG_SIZE = (640, 640)       # (640, 640)
 
 # dataset
 DATASET = 'ytb'  # or 'ytb'
