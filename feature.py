@@ -59,8 +59,8 @@ def extract_features(backbone, dataset='davis', batch_size=1):
 
         for img in sample['frames']:
             # read in frames in a mini batch
-            img_size = img.size()
-            img = img.view(-1, tuple(img_size[2:]))
+            img_size = tuple(img.size())
+            img = img.view(-1, img_size[2:])
             img = img.to(device)
             img = torch.squeeze(img)
             res = model(img)
