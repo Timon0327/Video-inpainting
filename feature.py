@@ -79,6 +79,6 @@ def extract_features(backbone, dataset='davis', batch_size=1):
 
 
 if __name__ == '__main__':
-    extract_features(backbone='resnet50', dataset='youtube')
+    extract_features(backbone='resnet50', dataset='youtube', batch_size=4)
 
 
