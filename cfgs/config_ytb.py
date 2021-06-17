@@ -47,7 +47,7 @@ DEEPFILL_WEIGHT = '/mnt/qinlikun/inpainting/imagenet_deepfill.pth'
 ############### Training Setting ################
 '''
 
-DATA_ROOT = '/mnt/qinlikun/dataset/youtube/train'
+DATA_ROOT = '/mnt/qinlikun/dataset/youtube/little'  # '/mnt/qinlikun/dataset/youtube/train'
 
 SAVE_DIR = '/mnt/qinlikun/inpainting'
 
