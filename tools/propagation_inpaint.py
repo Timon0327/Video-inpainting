@@ -182,12 +182,12 @@ def propagation(args, frame_inapint_model=None):
         if iter_num == 0:
 
             image = cv2.imread(
-                os.path.join(img_root, frame_name_list[frames_num - 1]))
+                os.path.join(img_root, frame_name_list[flow_start_no + frames_num - 1]))
             image = cv2.resize(image, (shape[1], shape[0]))
 
             if args.mask_type == 'random':
                 label = cv2.imread(
-                    os.path.join(mask_root, '%05d.png' % (0 + flow_start_no)), cv2.IMREAD_UNCHANGED)
+                    os.path.join(mask_root, '%05d.png' % (flow_start_no + frames_num - 1)), cv2.IMREAD_UNCHANGED)
             else:
                 label = cv2.imread(
                     os.path.join(mask_root, 'mask.png'), cv2.IMREAD_UNCHANGED)
@@ -197,7 +197,7 @@ def propagation(args, frame_inapint_model=None):
             label = label_pool[-1]
 
         if len(label.shape) == 3:
-            label = label[:, :, 0]
+            label = label[:, :, 2]
         if args.enlarge_mask and iter_num == 0:
             kernel = np.ones((args.enlarge_kernel, args.enlarge_kernel), np.uint8)
             label = cv2.dilate(label, kernel, iterations=1)
@@ -211,11 +211,11 @@ def propagation(args, frame_inapint_model=None):
         for th in range(frames_num - 2, -1, -1):
             prog_bar.update()
             if iter_num == 0:
-                image = cv2.imread(os.path.join(img_root, frame_name_list[th]))
+                image = cv2.imread(os.path.join(img_root, frame_name_list[th + flow_start_no]))
                 image = cv2.resize(image, (shape[1], shape[0]))
                 if args.mask_type == 'random':
                     label = cv2.imread(
-                        os.path.join(mask_root, '%05d.png' % (0 + flow_start_no)), cv2.IMREAD_UNCHANGED)
+                        os.path.join(mask_root, '%05d.png' % (th + flow_start_no)), cv2.IMREAD_UNCHANGED)
                 else:
                     label = cv2.imread(
                         os.path.join(mask_root, 'mask.png'), cv2.IMREAD_UNCHANGED)
@@ -230,7 +230,7 @@ def propagation(args, frame_inapint_model=None):
             # flow2 = flo.flow_tf(flow2, image.shape)
 
             if len(label.shape) == 3:
-                label = label[:, :, 0]
+                label = label[:, :, 2]
             if args.enlarge_mask and iter_num == 0:
                 kernel = np.ones((args.enlarge_kernel, args.enlarge_kernel), np.uint8)
                 label = cv2.dilate(label, kernel, iterations=1)
@@ -262,12 +262,12 @@ def propagation(args, frame_inapint_model=None):
             v1 = (time_stamp[th][..., 0] == -1)
             v2 = (time_stamp[th][..., 1] == -1)
 
-            hole_v = (v1 & v2)
+            hole_v = (v1 & v2)      # can't reach
 
             result = results[th][..., 0].copy()
             result[v1, :] = results[th][v1, :, 1].copy()
 
-            v3 = ((v1 == 0) & (v2 == 0))
+            v3 = ((v1 == 0) & (v2 == 0))    # can reach from both directions
 
             dist = time_stamp[th][..., 1] - time_stamp[th][..., 0]
             dist[dist < 1] = 1
@@ -315,7 +315,7 @@ def propagation(args, frame_inapint_model=None):
         os.makedirs(os.path.join(output_root, 'inpaint_res'))  # '.../demo/Inpaint_Res/inpaint_res'
 
     for th in range(0, frames_num-1):
-        cv2.imwrite(os.path.join(output_root, 'inpaint_res', '%05d.png' % (th + flow_start_no)),
+        cv2.imwrite(os.path.join(output_root, 'inpaint_res', '%05d.jpg' % (th + flow_start_no)),
                     result_pool[th].astype(np.uint8))
 
     print('Propagation has been finished')
