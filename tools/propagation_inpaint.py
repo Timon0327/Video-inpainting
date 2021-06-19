@@ -102,7 +102,7 @@ def propagation(args, frame_inapint_model=None):
         print('Iter', iter_num, 'Forward Propagation')
         # forward
         if iter_num == 0:
-            image = cv2.imread(os.path.join(img_root, frame_name_list[0]))  # frame_name_list[4]
+            image = cv2.imread(os.path.join(img_root, frame_name_list[flow_start_no]))  # frame_name_list[4]
             image = cv2.resize(image, (shape[1], shape[0]))
             if args.mask_type == 'random':
                 label = cv2.imread(
