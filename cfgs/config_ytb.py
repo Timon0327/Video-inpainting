@@ -13,7 +13,7 @@ IMG_SIZE = (640, 640)       # (640, 640)
 DATASET = 'ytb'  # or 'ytb'
 
 # directory of test frames
-TEST_ROOT = '/mnt/qinlikun/dataset/test/ytb'
+TEST_ROOT = '/mnt/qinlikun/dataset/test/ytb/1'
 
 # directory of valid frames
 VALID_ROOT = '/mnt/qinlikun/dataset/youtube/valid'
