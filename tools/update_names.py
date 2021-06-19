@@ -1,7 +1,6 @@
 import os
 import sys
 sys.path.append('..')
-import cfgs.config_ytb as config
 
 for j in range(1, 9):
 
