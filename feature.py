@@ -59,12 +59,16 @@ def extract_features(backbone, dataset='davis', batch_size=1):
 
         for img in sample['frames']:
             # read in frames in a mini batch
-            # img_size = tuple(img.size())
-            # img = img.view((-1,) + img_size[2:])
+
             img = img.to(device)
-            img = torch.squeeze(img)
+            if batch_size > 1:
+                img_size = tuple(img.size())
+                img = img.view((-1,) + img_size[2:])
+            else:
+                img = torch.squeeze(img)
             res = model(img)
-            # res = res.view((img_size[0], img_size[1], -1))
+            if batch_size > 1:
+                res = res.view((img_size[0], img_size[1], -1))
             results.append(res)
             print(batch)
 
@@ -73,19 +77,27 @@ def extract_features(backbone, dataset='davis', batch_size=1):
             # print(sample['video'][0])
             print('output:', res.size())
 
-        # result = torch.cat(results, dim=1)
-        # save features
-        # for i in range(img_size[0]):
-        output_file = sample['out_file'][0]
-        print('output at ', output_file)
-        with open(output_file, 'wb') as f:
-            pickle.dump(results, f)  # each pk file stores a list of tensor, which has size of [N, 2048]
-        results = []  # N = slice * slice * 2N
+        if batch_size > 1:
+            result = torch.cat(results, dim=1)
+            # save features
+            for i in range(img_size[0]):
+                output_file = sample['out_file'][i]
+                print('output at ', output_file)
+                with open(output_file, 'wb') as f:
+                    pickle.dump(result[i], f)  # each pk file stores a list of tensor, which has size of [N, 2048]
+                # results = []  # N = slice * slice * 2N
+        else:
+            output_file = sample['out_file'][0]
+            print('output at ', output_file)
+            with open(output_file, 'wb') as f:
+                pickle.dump(results, f)  # each pk file stores a list of tensor, which has size of [N, 2048]
+            results = []
+
 
 
 
 
 if __name__ == '__main__':
-    extract_features(backbone='resnet50', dataset='youtube', batch_size=1)
+    extract_features(backbone='resnet50', dataset='youtube', batch_size=2)
 
 

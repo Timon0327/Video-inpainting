@@ -270,6 +270,22 @@ def psnr_and_ssim(args):
     print('average psnr is ', psnr_mean)
     print('average ssim is ', ssim_mean)
 
+    with open(os.path.join(args.dataset_root, 'result.txt'), 'w') as f:
+        f.write('average mse is ' + str(mse_mean) + '\n')
+        f.write('average psnr is ' + str(psnr_mean) + '\n')
+        f.write('average ssim is ' + str(ssim_mean) + '\n')
+
+    with open(os.path.join(os.path.dirname(args.dataset_root), 'result.txt'), 'a') as f:
+        f.write('---------------------------------\n')
+        f.write('video: ' + args.dataset_root + '\n')
+        f.write('average mse is ' + str(mse_mean) + '\n')
+        f.write('average psnr is ' + str(psnr_mean) + '\n')
+        f.write('average ssim is ' + str(ssim_mean) + '\n')
+        f.write('\n')
+
+
+
+
 
 def main():
     args = parse_argse()

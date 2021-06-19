@@ -64,7 +64,7 @@ def propagation(args, frame_inapint_model=None):
         os.makedirs(output_root)
 
     frame_name_list = sorted(os.listdir(img_root))
-    frames_num = len(frame_name_list) - 8
+    frames_num = len(frame_name_list)   # frames_num = len(frame_name_list) - 8
     frame_inpaint_seq = np.ones(frames_num-1)   # [1,1,1,1,1,....]
     masked_frame_num = np.sum((frame_inpaint_seq > 0).astype(np.int))   # frames_num - 1
     print(masked_frame_num, 'frames need to be inpainted.')
@@ -102,7 +102,7 @@ def propagation(args, frame_inapint_model=None):
         print('Iter', iter_num, 'Forward Propagation')
         # forward
         if iter_num == 0:
-            image = cv2.imread(os.path.join(img_root, frame_name_list[4]))
+            image = cv2.imread(os.path.join(img_root, frame_name_list[0]))  # frame_name_list[4]
             image = cv2.resize(image, (shape[1], shape[0]))
             if args.mask_type == 'random':
                 label = cv2.imread(
@@ -131,7 +131,7 @@ def propagation(args, frame_inapint_model=None):
         for th in range(1, frames_num):
             prog_bar.update()
             if iter_num == 0:
-                image = cv2.imread(os.path.join(img_root, frame_name_list[th - 1 + flow_start_no]))
+                image = cv2.imread(os.path.join(img_root, frame_name_list[th + flow_start_no]))
                 image = cv2.resize(image, (shape[1], shape[0]))
             else:
                 image = result_pool[th]

@@ -181,14 +181,6 @@ class FlownetCGTrain(Dataset):
         self.data_root = data_root
         self.mode = mode
 
-        if not out_dir:
-            self.out_dir = os.path.join(data_root, 'flow')
-        else:
-            self.out_dir = out_dir
-
-        if not os.path.exists(self.out_dir):
-            os.mkdir(self.out_dir)
-
         # set path
         self.img_dir = os.path.join(data_root, 'JPEGImages')  # Full-Resolution
         if not mask_dir:
@@ -248,8 +240,7 @@ class FlownetCGTrain(Dataset):
         if not os.path.exists(self.file):
             with open(self.file, 'w') as f:
                 for video in self.video_list:
-                    if not os.path.exists(os.path.join(self.out_dir, video)):
-                        os.mkdir(os.path.join(self.out_dir, video))
+
                     # get the number of images per video
                     features = os.listdir(os.path.join(self.feature_dir, video))
                     features.sort()
